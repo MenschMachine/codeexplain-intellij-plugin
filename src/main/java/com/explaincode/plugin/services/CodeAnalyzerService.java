@@ -28,45 +28,59 @@ public class CodeAnalyzerService {
 
     /**
      * Analyzes the given PSI element and its context to provide a detailed explanation.
+     * Makes an asynchronous REST call to an external API to get the explanation.
+     *
+     * @param element      The PSI element to analyze
+     * @param selectedText The text that was selected by the user
+     * @return A CompletableFuture that will complete with the explanation
+     */
+    public CompletableFuture<String> analyzeCodeAsync(@NotNull PsiElement element, @NotNull String selectedText) {
+        // Get surrounding context
+        String context = getSurroundingContext(element);
+
+        // Create JSON payload
+        String jsonPayload = String.format("{\"selectedCode\": %s, \"context\": %s}",
+                escapeJsonString(selectedText),
+                escapeJsonString(context));
+
+        // Make the API call
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(API_URL))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                .timeout(Duration.ofSeconds(30))
+                .build();
+
+        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                .thenApply(response -> {
+                    if (response.statusCode() == 200) {
+                        // Parse the JSON response to extract the explanation
+                        String responseBody = response.body();
+                        String explanation = extractExplanationFromJson(responseBody);
+                        return explanation != null ? explanation : 
+                               "Error: Could not extract explanation from API response: " + responseBody;
+                    } else {
+                        return "Error: Failed to get explanation from API. Status code: " + response.statusCode() +
+                                "\nResponse: " + response.body();
+                    }
+                })
+                .exceptionally(e -> "Error: Failed to get explanation from API. Exception: " + e.getMessage());
+    }
+
+    /**
+     * Analyzes the given PSI element and its context to provide a detailed explanation.
      * Makes a REST call to an external API to get the explanation.
+     * This is a blocking version of the method that waits for the result.
      *
      * @param element      The PSI element to analyze
      * @param selectedText The text that was selected by the user
      * @return A detailed explanation of the code
+     * @deprecated Use analyzeCodeAsync instead for better UI responsiveness
      */
+    @Deprecated
     public String analyzeCode(@NotNull PsiElement element, @NotNull String selectedText) {
         try {
-            // Get surrounding context
-            String context = getSurroundingContext(element);
-
-            // Create JSON payload
-            String jsonPayload = String.format("{\"selectedCode\": %s, \"context\": %s}",
-                    escapeJsonString(selectedText),
-                    escapeJsonString(context));
-
-            // Make the API call
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                    .timeout(Duration.ofSeconds(30))
-                    .build();
-
-            CompletableFuture<HttpResponse<String>> responseFuture = httpClient.sendAsync(
-                    request, HttpResponse.BodyHandlers.ofString());
-
-            HttpResponse<String> response = responseFuture.get();
-
-            if (response.statusCode() == 200) {
-                // Parse the JSON response to extract the explanation
-                String responseBody = response.body();
-                String explanation = extractExplanationFromJson(responseBody);
-                return explanation != null ? explanation : 
-                       "Error: Could not extract explanation from API response: " + responseBody;
-            } else {
-                return "Error: Failed to get explanation from API. Status code: " + response.statusCode() +
-                        "\nResponse: " + response.body();
-            }
+            return analyzeCodeAsync(element, selectedText).get();
         } catch (InterruptedException | ExecutionException e) {
             return "Error: Failed to get explanation from API. Exception: " + e.getMessage();
         }

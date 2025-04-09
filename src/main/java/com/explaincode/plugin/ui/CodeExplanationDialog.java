@@ -14,9 +14,27 @@ import java.awt.*;
  * Dialog for displaying code explanation in a more user-friendly way.
  */
 public class CodeExplanationDialog extends DialogWrapper {
-    private final String explanation;
+    private String explanation;
     private final String selectedCode;
+    private JTextArea explanationText;
+    private JPanel loadingPanel;
+    private JTabbedPane tabbedPane;
+    private JBPanel<JBPanel<?>> explanationPanel;
 
+    /**
+     * Constructor for showing the dialog with a loading indicator.
+     */
+    public CodeExplanationDialog(@Nullable Project project, String selectedCode) {
+        super(project);
+        this.explanation = "Loading explanation...";
+        this.selectedCode = selectedCode;
+        setTitle("Code Explanation");
+        init();
+    }
+
+    /**
+     * Constructor for showing the dialog with an explanation already available.
+     */
     public CodeExplanationDialog(@Nullable Project project, String explanation, String selectedCode) {
         super(project);
         this.explanation = explanation;
@@ -32,19 +50,31 @@ public class CodeExplanationDialog extends DialogWrapper {
         panel.setBorder(JBUI.Borders.empty(10));
 
         // Create a tabbed pane for different views
-        JTabbedPane tabbedPane = new JTabbedPane();
-        
+        tabbedPane = new JTabbedPane();
+
         // Tab for the explanation
-        JBPanel<JBPanel<?>> explanationPanel = new JBPanel<>(new BorderLayout());
-        JTextArea explanationText = new JTextArea(explanation);
+        explanationPanel = new JBPanel<>(new BorderLayout());
+
+        // Create loading panel with spinner
+        loadingPanel = createLoadingPanel();
+
+        // Create explanation text area
+        explanationText = new JTextArea(explanation);
         explanationText.setEditable(false);
         explanationText.setLineWrap(true);
         explanationText.setWrapStyleWord(true);
         explanationText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         JBScrollPane explanationScrollPane = new JBScrollPane(explanationText);
-        explanationPanel.add(explanationScrollPane, BorderLayout.CENTER);
+
+        // Add the appropriate component based on whether we're loading or not
+        if (explanation.equals("Loading explanation...")) {
+            explanationPanel.add(loadingPanel, BorderLayout.CENTER);
+        } else {
+            explanationPanel.add(explanationScrollPane, BorderLayout.CENTER);
+        }
+
         tabbedPane.addTab("Explanation", explanationPanel);
-        
+
         // Tab for the selected code
         JBPanel<JBPanel<?>> codePanel = new JBPanel<>(new BorderLayout());
         JTextArea codeText = new JTextArea(selectedCode);
@@ -53,9 +83,58 @@ public class CodeExplanationDialog extends DialogWrapper {
         JBScrollPane codeScrollPane = new JBScrollPane(codeText);
         codePanel.add(codeScrollPane, BorderLayout.CENTER);
         tabbedPane.addTab("Selected Code", codePanel);
-        
+
         panel.add(tabbedPane, BorderLayout.CENTER);
-        
+
         return panel;
+    }
+
+    /**
+     * Creates a panel with a loading spinner and message.
+     */
+    private JPanel createLoadingPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(JBUI.Borders.empty(20));
+
+        // Create a panel for the spinner and text with BoxLayout
+        JPanel centerPanel = new JPanel();
+        centerPanel.setLayout(new BoxLayout(centerPanel, BoxLayout.Y_AXIS));
+
+        // Add spinner
+        JPanel spinnerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        spinnerPanel.add(new JLabel("Loading..."));
+        JProgressBar spinner = new JProgressBar();
+        spinner.setIndeterminate(true);
+        spinnerPanel.add(spinner);
+        centerPanel.add(spinnerPanel);
+
+        // Add message
+        JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        messagePanel.add(new JLabel("Analyzing your code. This may take a few seconds."));
+        centerPanel.add(messagePanel);
+
+        // Center the content
+        panel.add(centerPanel, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    /**
+     * Updates the dialog with the explanation received from the API.
+     * 
+     * @param newExplanation The explanation text to display
+     */
+    public void updateExplanation(String newExplanation) {
+        this.explanation = newExplanation;
+        explanationText.setText(newExplanation);
+
+        // Replace loading panel with explanation text
+        explanationPanel.removeAll();
+        JBScrollPane explanationScrollPane = new JBScrollPane(explanationText);
+        explanationPanel.add(explanationScrollPane, BorderLayout.CENTER);
+
+        // Refresh the UI
+        explanationPanel.revalidate();
+        explanationPanel.repaint();
     }
 }

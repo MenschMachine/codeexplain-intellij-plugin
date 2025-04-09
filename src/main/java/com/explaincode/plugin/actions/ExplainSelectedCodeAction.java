@@ -65,15 +65,23 @@ public class ExplainSelectedCodeAction extends AnAction {
         // Get the CodeAnalyzerService from the application service registry
         CodeAnalyzerService analyzerService = com.intellij.openapi.application.ApplicationManager.getApplication()
                 .getService(CodeAnalyzerService.class);
-        String explanation = analyzerService.analyzeCode(element, selectedText);
 
-        // Add file information
-        StringBuilder fullExplanation = new StringBuilder(explanation);
-        fullExplanation.append("\n\nFile: ").append(psiFile.getName());
-        fullExplanation.append("\nSelection Range: ").append(startOffset).append(" - ").append(endOffset);
-
-        // Show the explanation in a custom dialog
-        CodeExplanationDialog dialog = new CodeExplanationDialog(project, fullExplanation.toString(), selectedText);
+        // Show dialog with loading spinner first
+        CodeExplanationDialog dialog = new CodeExplanationDialog(project, selectedText);
         dialog.show();
+
+        // Make the API call asynchronously
+        analyzerService.analyzeCodeAsync(element, selectedText)
+            .thenAccept(explanation -> {
+                // Add file information
+                StringBuilder fullExplanation = new StringBuilder(explanation);
+                fullExplanation.append("\n\nFile: ").append(psiFile.getName());
+                fullExplanation.append("\nSelection Range: ").append(startOffset).append(" - ").append(endOffset);
+
+                // Update the dialog with the explanation on the UI thread
+                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater(() -> {
+                    dialog.updateExplanation(fullExplanation.toString());
+                });
+            });
     }
 }
