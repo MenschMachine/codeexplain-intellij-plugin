@@ -7,6 +7,9 @@ import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
 import com.intellij.util.ui.UIUtil;
+import com.vladsch.flexmark.html.HtmlRenderer;
+import com.vladsch.flexmark.parser.Parser;
+import com.vladsch.flexmark.util.ast.Document;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -205,6 +208,13 @@ public class CodeExplanationDialog extends DialogWrapper {
         return panel;
     }
 
+    private String markdownToHtml(String markdownInput) {
+        Parser parser = Parser.builder().build();
+        Document document = parser.parse(markdownInput);
+        HtmlRenderer renderer = HtmlRenderer.builder().build();
+        return renderer.render(document);
+    }
+
     /**
      * Creates a panel with a loading spinner and message.
      */
@@ -333,7 +343,7 @@ public class CodeExplanationDialog extends DialogWrapper {
      * @param markdown The markdown text to convert
      * @return HTML representation of the markdown
      */
-    private String markdownToHtml(String markdown) {
+    private String markdownToHtmlByHand(String markdown) {
         if (markdown == null || markdown.isEmpty()) {
             String bodyStyle = isDarkTheme
                     ? "<html><body style=\"background-color: #2b2b2b; color: #a9b7c6;\"></body></html>"
