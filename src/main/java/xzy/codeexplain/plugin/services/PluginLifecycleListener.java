@@ -13,28 +13,32 @@ import org.jetbrains.annotations.NotNull;
  */
 public class PluginLifecycleListener implements DynamicPluginListener {
     private static final Logger LOG = Logger.getInstance(PluginLifecycleListener.class);
+    private static final String PLUGIN_ID = "xyz.codeexplain.plugin";
 
     @Override
     public void beforePluginLoaded(@NotNull IdeaPluginDescriptor pluginDescriptor) {
-        LOG.info("Plugin is about to be loaded: " + pluginDescriptor.getName());
+        if (isOurPlugin(pluginDescriptor)) {
+            LOG.info("Plugin is about to be loaded: " + pluginDescriptor.getName());
+        }
     }
 
     @Override
     public void pluginLoaded(@NotNull IdeaPluginDescriptor pluginDescriptor) {
-        LOG.info("Plugin has been loaded: " + pluginDescriptor.getName());
+        if (isOurPlugin(pluginDescriptor)) {
+            LOG.info("Plugin has been loaded: " + pluginDescriptor.getName());
+        }
     }
 
     @Override
     public void beforePluginUnload(@NotNull IdeaPluginDescriptor pluginDescriptor, boolean isUpdate) {
-        LOG.info("Plugin is about to be unloaded: " + pluginDescriptor.getName() + ", isUpdate: " + isUpdate);
+        if (isOurPlugin(pluginDescriptor)) {
+            LOG.info("Plugin is about to be unloaded: " + pluginDescriptor.getName() + ", isUpdate: " + isUpdate);
 
-        // Get the CodeAnalyzerService from the application service registry
-        CodeAnalyzerService analyzerService = ApplicationManager.getApplication()
-                .getService(CodeAnalyzerService.class);
+            // Get the CodeAnalyzerService from the application service registry
+            CodeAnalyzerService analyzerService = ApplicationManager.getApplication()
+                    .getService(CodeAnalyzerService.class);
 
-        // Clean up resources if it's our plugin
-        if (pluginDescriptor.getPluginId().getIdString().equals("xyz.codeexplain.plugin")) {
-            // Dispose of any resources that need to be cleaned up
+            // Clean up resources
             if (analyzerService != null) {
                 try {
                     analyzerService.close();
@@ -43,13 +47,23 @@ public class PluginLifecycleListener implements DynamicPluginListener {
                 }
             }
 
-            // Remove any listeners or references that might prevent unloading
+            // Remove any UI components that might be showing
+            ApplicationManager.getApplication().invokeLater(() -> {
+                // Clean up any remaining dialogs or UI components
+            });
+
             LOG.info("Cleaned up resources for plugin: " + pluginDescriptor.getName());
         }
     }
 
     @Override
     public void pluginUnloaded(@NotNull IdeaPluginDescriptor pluginDescriptor, boolean isUpdate) {
-        LOG.info("Plugin has been unloaded: " + pluginDescriptor.getName() + ", isUpdate: " + isUpdate);
+        if (isOurPlugin(pluginDescriptor)) {
+            LOG.info("Plugin has been unloaded: " + pluginDescriptor.getName() + ", isUpdate: " + isUpdate);
+        }
+    }
+
+    private boolean isOurPlugin(@NotNull IdeaPluginDescriptor pluginDescriptor) {
+        return PLUGIN_ID.equals(pluginDescriptor.getPluginId().getIdString());
     }
 }

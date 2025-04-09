@@ -11,12 +11,11 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Register the code analyzer service -->
+        <!-- Register the code analyzer service as light service -->
         <applicationService serviceImplementation="xzy.codeexplain.plugin.services.CodeAnalyzerService"/>
     </extensions>
 
     <applicationListeners>
-        <!-- Register the plugin lifecycle listener -->
         <listener class="xzy.codeexplain.plugin.services.PluginLifecycleListener"
                   topic="com.intellij.ide.plugins.DynamicPluginListener"/>
     </applicationListeners>

@@ -1,10 +1,10 @@
 package xzy.codeexplain.plugin.actions;
 
-import xzy.codeexplain.plugin.services.CodeAnalyzerService;
-import xzy.codeexplain.plugin.ui.CodeExplanationDialog;
+import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -12,18 +12,17 @@ import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.IconLoader;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiUtilBase;
-import org.jetbrains.annotations.NotNull;
-import com.intellij.codeInsight.hint.HintManager;
 import com.intellij.ui.components.JBLabel;
-import com.intellij.util.ui.UIUtil;
-import com.intellij.openapi.application.ApplicationManager;
-import com.intellij.openapi.util.IconLoader;
+import org.jetbrains.annotations.NotNull;
+import xzy.codeexplain.plugin.services.CodeAnalyzerService;
+import xzy.codeexplain.plugin.ui.CodeExplanationDialog;
 
 import javax.swing.*;
-import java.awt.FlowLayout;
+import java.awt.*;
 import java.util.Objects;
 
 /**
@@ -78,7 +77,7 @@ public class ExplainSelectedCodeAction extends AnAction {
                 .getService(CodeAnalyzerService.class);
 
         // Create a loading hint near the cursor
-        JComponent loadingHint = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        JComponent loadingHint = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         loadingHint.setOpaque(false);
         JBLabel loadingLabel = new JBLabel("Analyzing...", IconLoader.getIcon("/icons/explain_code.svg", ExplainSelectedCodeAction.class), SwingConstants.LEFT);
         loadingHint.add(loadingLabel);
