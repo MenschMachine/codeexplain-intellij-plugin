@@ -10,6 +10,13 @@ on:
         type: boolean
         default: false
 
+# Permissions needed for creating releases
+permissions:
+  contents: write
+  packages: write
+  issues: write
+  pull-requests: write
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest

@@ -7,6 +7,11 @@ on:
     branches: [ '**' ]  # Run on all branches
   workflow_dispatch:
 
+# Permissions for the workflow
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
