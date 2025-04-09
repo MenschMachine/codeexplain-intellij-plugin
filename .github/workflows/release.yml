@@ -78,7 +78,7 @@ jobs:
           name: Release v${{ steps.calculate_version.outputs.new_version }}
           draft: false
           prerelease: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.prerelease }}
-          files: build/distributions/explain-selected-code-${{ steps.calculate_version.outputs.new_version }}.zip
+          files: build/distributions/codeexplain-intellij-plugin-${{ steps.calculate_version.outputs.new_version }}.zip
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -27,7 +27,7 @@ This guide provides detailed instructions on how to install, publish, set up you
 
 ### Installing from Disk
 
-1. Download the plugin ZIP file from the [releases page](https://github.com/yourusername/explain-selected-code/releases) or build it yourself (see [Building the Plugin](#building-the-plugin))
+1. Download the plugin ZIP file from the [releases page](https://github.com/yourusername/codeexplain-intellij-plugin/releases) or build it yourself (see [Building the Plugin](#building-the-plugin))
 2. Open IntelliJ IDEA
 3. Go to Settings/Preferences > Plugins
 4. Click the gear icon and select "Install Plugin from Disk..."
@@ -131,8 +131,8 @@ Before you begin, ensure you have the following installed:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/explain-selected-code.git
-cd explain-selected-code
+git clone https://github.com/yourusername/codeexplain-intellij-plugin.git
+cd codeexplain-intellij-plugin
 ```
 
 ### 2. Open the Project in IntelliJ IDEA
@@ -198,7 +198,7 @@ If you want to quickly test changes to the plugin without setting up a full deve
    ./gradlew buildPlugin
    ```
 
-2. The built plugin will be located in `build/distributions/` as a ZIP file (e.g., `explain-selected-code-1.0-SNAPSHOT.zip`)
+2. The built plugin will be located in `build/distributions/` as a ZIP file (e.g., `codeexplain-intellij-plugin-1.0-SNAPSHOT.zip`)
 
 3. Open your regular IntelliJ IDEA installation (not the development instance)
 
