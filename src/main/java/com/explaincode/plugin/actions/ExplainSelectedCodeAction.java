@@ -62,8 +62,9 @@ public class ExplainSelectedCodeAction extends AnAction {
 
     private void analyzeAndExplainCode(Project project, PsiFile psiFile, PsiElement element, 
                                       String selectedText, int startOffset, int endOffset) {
-        // Use the CodeAnalyzerService to analyze the selected code
-        CodeAnalyzerService analyzerService = new CodeAnalyzerService();
+        // Get the CodeAnalyzerService from the application service registry
+        CodeAnalyzerService analyzerService = com.intellij.openapi.application.ApplicationManager.getApplication()
+                .getService(CodeAnalyzerService.class);
         String explanation = analyzerService.analyzeCode(element, selectedText);
 
         // Add file information

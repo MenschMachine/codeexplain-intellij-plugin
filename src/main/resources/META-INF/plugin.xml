@@ -8,11 +8,21 @@
     Select a piece of code and get insights about what it does.
     ]]></description>
 
+    <!-- This tag indicates this is a dynamic plugin that can be loaded/unloaded without IDE restart -->
+    <product-descriptor code="EXPLAINCODE" release-date="20230101" release-version="1"/>
+
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
+        <!-- Register the code analyzer service -->
+        <applicationService serviceImplementation="com.explaincode.plugin.services.CodeAnalyzerService"/>
     </extensions>
+
+    <applicationListeners>
+        <!-- Register the plugin lifecycle listener -->
+        <listener class="com.explaincode.plugin.services.PluginLifecycleListener"
+                  topic="com.intellij.ide.plugins.DynamicPluginListener"/>
+    </applicationListeners>
 
     <actions>
         <action id="ExplainSelectedCode" class="com.explaincode.plugin.actions.ExplainSelectedCodeAction" 
