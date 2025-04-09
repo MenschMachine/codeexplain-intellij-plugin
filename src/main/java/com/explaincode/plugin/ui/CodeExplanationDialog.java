@@ -275,30 +275,6 @@ public class CodeExplanationDialog extends DialogWrapper {
                     break;
                 }
             }
-
-            // Update Original Markdown tab
-            for (int i = 0; i < tabbedPane.getTabCount(); i++) {
-                if ("Original Markdown".equals(tabbedPane.getTitleAt(i))) {
-                    // Get the component at this tab
-                    Component component = tabbedPane.getComponentAt(i);
-                    if (component instanceof JBPanel) {
-                        JBPanel<?> panel = (JBPanel<?>) component;
-                        // Find the JTextArea inside the panel
-                        for (Component c : panel.getComponents()) {
-                            if (c instanceof JBScrollPane) {
-                                JBScrollPane scrollPane = (JBScrollPane) c;
-                                Component view = scrollPane.getViewport().getView();
-                                if (view instanceof JTextArea) {
-                                    JTextArea textArea = (JTextArea) view;
-                                    textArea.setText(explanation);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
-            }
         }
 
         // Refresh the UI
