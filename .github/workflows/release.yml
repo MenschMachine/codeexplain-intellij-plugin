@@ -46,25 +46,85 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Debug build.gradle
+        run: |
+          echo "Current build.gradle content:"
+          cat build.gradle
+
+          echo "\nGroup and version lines:"
+          grep -n "group 'xyz.codeexplain'" build.gradle -A 1 || echo "Group line not found"
+
+          echo "\nAll version lines:"
+          grep -n "version " build.gradle || echo "No version lines found"
+
       - name: Calculate next version
         id: calculate_version
         run: |
-          # Extract current version from build.gradle
-          CURRENT_VERSION=$(grep -oP "version '\K[^']+" build.gradle)
+          # Extract current version from build.gradle by finding the line after 'group 'xyz.codeexplain''
+          GROUP_LINE_NUM=$(grep -n "group 'xyz.codeexplain'" build.gradle | cut -d ':' -f1)
+          if [ -n "$GROUP_LINE_NUM" ]; then
+            # Get the next line after the group line
+            NEXT_LINE_NUM=$((GROUP_LINE_NUM + 1))
+            VERSION_LINE=$(sed -n "${NEXT_LINE_NUM}p" build.gradle)
+            echo "Version line: $VERSION_LINE"
+
+            # Extract version from the line, handling potential whitespace
+            if [[ $VERSION_LINE =~ [[:space:]]*version[[:space:]]*\'([^\']*)\'|[[:space:]]*version[[:space:]]*\"([^\"]*)\" ]]; then
+              if [ -n "${BASH_REMATCH[1]}" ]; then
+                CURRENT_VERSION="${BASH_REMATCH[1]}"
+              else
+                CURRENT_VERSION="${BASH_REMATCH[2]}"
+              fi
+            else
+              # Try a simpler approach with grep
+              if [[ $VERSION_LINE =~ version ]]; then
+                if [[ $VERSION_LINE =~ "'" ]]; then
+                  CURRENT_VERSION=$(echo "$VERSION_LINE" | grep -oP "version\s*'\K[^']+")
+                else
+                  CURRENT_VERSION=$(echo "$VERSION_LINE" | grep -oP 'version\s*"\K[^"]+')
+                fi
+              fi
+
+              if [ -z "$CURRENT_VERSION" ]; then
+                echo "Could not parse version from line: $VERSION_LINE"
+                CURRENT_VERSION="0.0.1"
+              fi
+            fi
+          else
+            echo "Could not find 'group 'xyz.codeexplain'' in build.gradle, falling back to regex search"
+            if grep -q "version '[^']*'" build.gradle; then
+              CURRENT_VERSION=$(grep -oP "version '\K[^']+" build.gradle)
+            elif grep -q 'version "[^"]*"' build.gradle; then
+              CURRENT_VERSION=$(grep -oP 'version "\K[^"]+' build.gradle)
+            else
+              echo "Could not find version in build.gradle, defaulting to 0.0.1"
+              CURRENT_VERSION="0.0.1"
+            fi
+          fi
           echo "Current version: $CURRENT_VERSION"
 
           # Remove -SNAPSHOT suffix if present
-          CURRENT_VERSION=${CURRENT_VERSION%-SNAPSHOT}
+          BASE_VERSION=${CURRENT_VERSION%-SNAPSHOT}
+          echo "Base version: $BASE_VERSION"
+
+          # Check if version follows semver pattern
+          if [[ ! $BASE_VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Warning: Current version doesn't follow semantic versioning pattern (X.Y.Z). Using 0.0.1 as base."
+            BASE_VERSION="0.0.1"
+          fi
 
           # Split version into components
-          IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
+          IFS='.' read -r -a VERSION_PARTS <<< "$BASE_VERSION"
           MAJOR=${VERSION_PARTS[0]:-0}
           MINOR=${VERSION_PARTS[1]:-0}
           PATCH=${VERSION_PARTS[2]:-0}
 
+          echo "Parsed version: Major=$MAJOR, Minor=$MINOR, Patch=$PATCH"
+
           # Increment patch version
           NEW_PATCH=$((PATCH + 1))
           NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          echo "Calculated new version: $NEW_VERSION"
 
           # Add -SNAPSHOT suffix for prerelease
           if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.prerelease }}" == "true" ]]; then
@@ -92,11 +152,20 @@ jobs:
           git tag -a v${{ steps.calculate_version.outputs.new_version }} -m "Release v${{ steps.calculate_version.outputs.new_version }}"
           git push origin v${{ steps.calculate_version.outputs.new_version }}
 
+      - name: List Distribution Files
+        run: |
+          echo "Listing files in build/distributions:"
+          ls -la build/distributions/
+
       - name: Create GitHub Release
         id: create_release
         run: |
           # Find the built plugin ZIP file
           PLUGIN_ZIP=$(find build/distributions -name "*.zip" | head -n 1)
+          if [ -z "$PLUGIN_ZIP" ]; then
+            echo "No ZIP file found in build/distributions. Using wildcard pattern."
+            PLUGIN_ZIP="build/distributions/*.zip"
+          fi
           echo "Found plugin ZIP: $PLUGIN_ZIP"
 
           # Create a release using GitHub CLI
