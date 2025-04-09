@@ -33,7 +33,8 @@ patchPluginXml {
       Initial version of the plugin that displays information about selected code.
     """
     sinceBuild = '222'
-    untilBuild = '243.*'
+    // TODO what are best practices for this?
+    untilBuild = '299.*'
 }
 
 test {
