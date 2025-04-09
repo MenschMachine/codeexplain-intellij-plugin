@@ -24,29 +24,10 @@ public class PluginLifecycleListener implements DynamicPluginListener {
     public void pluginLoaded(@NotNull IdeaPluginDescriptor pluginDescriptor) {
         LOG.info("Plugin has been loaded: " + pluginDescriptor.getName());
 
-        // Only initialize our plugin
+        // Initialization logic moved to PluginConfig constructor
         if ("com.explaincode.plugin".equals(pluginDescriptor.getPluginId().getIdString())) {
-            initializePlugin();
-        }
-    }
-
-    /**
-     * Initialize plugin resources and configuration
-     */
-    private void initializePlugin() {
-        // Get the PluginConfig service
-        PluginConfig config = ApplicationManager.getApplication().getService(PluginConfig.class);
-
-        // Check for system property first
-        String debugProperty = System.getProperty("explaincode.debug");
-        if (debugProperty != null && (debugProperty.equalsIgnoreCase("true") || debugProperty.equals("1"))) {
-            config.setDebugMode(true);
-        } else {
-            // Check for environment variable if system property is not set
-            String debugEnv = System.getenv("EXPLAINCODE_DEBUG");
-            if (debugEnv != null && (debugEnv.equalsIgnoreCase("true") || debugEnv.equals("1"))) {
-                config.setDebugMode(true);
-            }
+            LOG.info("ExplainCode plugin loaded.");
+            // You could add other non-config initialization here if needed
         }
     }
 

@@ -14,10 +14,22 @@ public final class PluginConfig {
     private boolean debugMode = false;
 
     /**
-     * Constructor for the service
+     * Constructor for the service. Initializes configuration based on
+     * system properties or environment variables.
      */
     public PluginConfig() {
         // Initialize with default values
+        // Check for system property first
+        String debugProperty = System.getProperty("explaincode.debug");
+        if (debugProperty != null && (debugProperty.equalsIgnoreCase("true") || debugProperty.equals("1"))) {
+            this.debugMode = true;
+        } else {
+            // Check for environment variable if system property is not set
+            String debugEnv = System.getenv("EXPLAINCODE_DEBUG");
+            if (debugEnv != null && (debugEnv.equalsIgnoreCase("true") || debugEnv.equals("1"))) {
+                this.debugMode = true;
+            }
+        }
     }
 
     /**
