@@ -11,15 +11,16 @@
 
     <depends>com.intellij.modules.platform</depends>
 
+    <depends>com.intellij.modules.platform</depends>
+
     <extensions defaultExtensionNs="com.intellij">
         <!-- Services are now registered using @Service annotation -->
+
+        <!-- Register startup activity -->
+        <postStartupActivity implementation="com.explaincode.plugin.startup.PluginStartupActivity"/>
     </extensions>
 
-    <applicationListeners>
-        <!-- Register the plugin lifecycle listener -->
-        <listener class="com.explaincode.plugin.services.PluginLifecycleListener"
-                  topic="com.intellij.ide.plugins.DynamicPluginListener"/>
-    </applicationListeners>
+    <!-- Removed applicationListeners for PluginLifecycleListener -->
 
     <actions>
         <action id="ExplainSelectedCode" class="com.explaincode.plugin.actions.ExplainSelectedCodeAction"
