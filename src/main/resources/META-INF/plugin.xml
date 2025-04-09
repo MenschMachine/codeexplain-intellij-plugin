@@ -8,9 +8,6 @@
     Select a piece of code and get insights about what it does.
     ]]></description>
 
-    <!-- This tag indicates this is a dynamic plugin that can be loaded/unloaded without IDE restart -->
-    <product-descriptor code="EXPLAINCODE" release-date="20230101" release-version="1"/>
-
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -25,7 +22,7 @@
     </applicationListeners>
 
     <actions>
-        <action id="ExplainSelectedCode" class="com.explaincode.plugin.actions.ExplainSelectedCodeAction" 
+        <action id="ExplainSelectedCode" class="com.explaincode.plugin.actions.ExplainSelectedCodeAction"
                 text="Explain Selected Code" description="Analyze and explain the selected code">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <keyboard-shortcut keymap="$default" first-keystroke="alt E"/>
