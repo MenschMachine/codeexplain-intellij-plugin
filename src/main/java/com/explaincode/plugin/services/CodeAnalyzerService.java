@@ -11,6 +11,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Service for analyzing code elements by making REST calls to an external API.
@@ -56,7 +58,11 @@ public class CodeAnalyzerService {
             HttpResponse<String> response = responseFuture.get();
 
             if (response.statusCode() == 200) {
-                return response.body();
+                // Parse the JSON response to extract the explanation
+                String responseBody = response.body();
+                String explanation = extractExplanationFromJson(responseBody);
+                return explanation != null ? explanation : 
+                       "Error: Could not extract explanation from API response: " + responseBody;
             } else {
                 return "Error: Failed to get explanation from API. Status code: " + response.statusCode() +
                         "\nResponse: " + response.body();
@@ -81,6 +87,38 @@ public class CodeAnalyzerService {
 
         // If we can't get the file, just use the element's text
         return element.getText();
+    }
+
+    /**
+     * Extracts the explanation value from a JSON response.
+     * 
+     * @param jsonResponse The JSON response from the API
+     * @return The extracted explanation value, or null if not found
+     */
+    private String extractExplanationFromJson(String jsonResponse) {
+        if (jsonResponse == null || jsonResponse.isEmpty()) {
+            return null;
+        }
+
+        // Use regex to extract the value of the "explanation" key
+        // This pattern looks for "explanation": followed by a string value in quotes
+        Pattern pattern = Pattern.compile("\"explanation\"\\s*:\\s*\"((?:\\\\\"|[^\"])*?)\"");
+        Matcher matcher = pattern.matcher(jsonResponse);
+
+        if (matcher.find()) {
+            // Group 1 contains the value inside the quotes
+            String explanation = matcher.group(1);
+            // Unescape JSON escape sequences
+            return explanation.replace("\\\"", "\"")
+                             .replace("\\\\", "\\")
+                             .replace("\\n", "\n")
+                             .replace("\\r", "\r")
+                             .replace("\\t", "\t")
+                             .replace("\\b", "\b")
+                             .replace("\\f", "\f");
+        }
+
+        return null;
     }
 
     /**
