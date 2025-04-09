@@ -5,6 +5,7 @@ import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBPanel;
 import com.intellij.ui.components.JBScrollPane;
 import com.intellij.util.ui.JBUI;
+import com.intellij.util.ui.UIUtil;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
@@ -24,6 +25,7 @@ public class CodeExplanationDialog extends DialogWrapper {
     private JPanel loadingPanel;
     private JTabbedPane tabbedPane;
     private JBPanel<JBPanel<?>> explanationPanel;
+    private boolean isDarkTheme;
 
     /**
      * Constructor for showing the dialog with a loading indicator.
@@ -71,17 +73,43 @@ public class CodeExplanationDialog extends DialogWrapper {
         HTMLEditorKit kit = new HTMLEditorKit();
         explanationText.setEditorKit(kit);
         StyleSheet styleSheet = kit.getStyleSheet();
+
+        // Check if the IDE is using a dark theme
+        this.isDarkTheme = UIUtil.isUnderDarcula();
+
+        // Apply common styles
         styleSheet.addRule("body { font-family: sans-serif; font-size: 12pt; margin: 10px; }");
-        styleSheet.addRule("pre { background-color: #f5f5f5; padding: 10px; font-family: monospace; }");
-        styleSheet.addRule("code { background-color: #f5f5f5; padding: 2px 4px; font-family: monospace; }");
         styleSheet.addRule("h1, h2, h3, h4, h5, h6 { margin-top: 20px; margin-bottom: 10px; }");
         styleSheet.addRule("p { margin-top: 10px; margin-bottom: 10px; }");
         styleSheet.addRule("ul, ol { margin-top: 10px; margin-bottom: 10px; }");
 
+        // Apply theme-specific styles
+        if (isDarkTheme) {
+            // Dark theme styles
+            styleSheet.addRule("body { background-color: #2b2b2b; color: #a9b7c6; }");
+            styleSheet.addRule("pre { background-color: #2d2d2d; color: #f8f8f2; padding: 10px; font-family: monospace; }");
+            styleSheet.addRule("code { background-color: #2d2d2d; color: #f8f8f2; padding: 2px 4px; font-family: monospace; }");
+            styleSheet.addRule("a { color: #589df6; }");
+            styleSheet.addRule("h1, h2, h3, h4, h5, h6 { color: #d0d0ff; }");
+        } else {
+            // Light theme styles
+            styleSheet.addRule("body { background-color: #ffffff; color: #000000; }");
+            styleSheet.addRule("pre { background-color: #f5f5f5; color: #000000; padding: 10px; font-family: monospace; }");
+            styleSheet.addRule("code { background-color: #f5f5f5; color: #000000; padding: 2px 4px; font-family: monospace; }");
+            styleSheet.addRule("a { color: #0366d6; }");
+            styleSheet.addRule("h1, h2, h3, h4, h5, h6 { color: #000000; }");
+        }
+
         // Set the content
-        String htmlContent = explanation.equals("Loading explanation...") ? 
-                "<html><body>Loading explanation...</body></html>" : 
-                markdownToHtml(explanation);
+        String htmlContent;
+        if (explanation.equals("Loading explanation...")) {
+            String bodyStyle = isDarkTheme
+                    ? "<html><body style=\"background-color: #2b2b2b; color: #a9b7c6;\">Loading explanation...</body></html>"
+                    : "<html><body>Loading explanation...</body></html>";
+            htmlContent = bodyStyle;
+        } else {
+            htmlContent = markdownToHtml(explanation);
+        }
         explanationText.setText(htmlContent);
 
         JBScrollPane explanationScrollPane = new JBScrollPane(explanationText);
@@ -100,6 +128,20 @@ public class CodeExplanationDialog extends DialogWrapper {
         JTextArea codeText = new JTextArea(selectedCode);
         codeText.setEditable(false);
         codeText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+
+        // Apply theme-specific styling to the code text area
+        if (isDarkTheme) {
+            // Dark theme colors
+            codeText.setBackground(new Color(0x2d2d2d));
+            codeText.setForeground(new Color(0xf8f8f2));
+            codeText.setCaretColor(new Color(0xf8f8f2));
+        } else {
+            // Light theme colors
+            codeText.setBackground(new Color(0xf5f5f5));
+            codeText.setForeground(new Color(0x000000));
+            codeText.setCaretColor(new Color(0x000000));
+        }
+
         JBScrollPane codeScrollPane = new JBScrollPane(codeText);
         codePanel.add(codeScrollPane, BorderLayout.CENTER);
         tabbedPane.addTab("Selected Code", codePanel);
@@ -122,7 +164,8 @@ public class CodeExplanationDialog extends DialogWrapper {
 
         // Add spinner
         JPanel spinnerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        spinnerPanel.add(new JLabel("Loading..."));
+        JLabel loadingLabel = new JLabel("Loading...");
+        spinnerPanel.add(loadingLabel);
         JProgressBar spinner = new JProgressBar();
         spinner.setIndeterminate(true);
         spinnerPanel.add(spinner);
@@ -130,8 +173,24 @@ public class CodeExplanationDialog extends DialogWrapper {
 
         // Add message
         JPanel messagePanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        messagePanel.add(new JLabel("Analyzing your code. This may take a few seconds."));
+        JLabel messageLabel = new JLabel("Analyzing your code. This may take a few seconds.");
+        messagePanel.add(messageLabel);
         centerPanel.add(messagePanel);
+
+        // Apply theme-specific styling
+        if (isDarkTheme) {
+            // Dark theme colors
+            Color darkBackground = new Color(0x2b2b2b);
+            Color darkForeground = new Color(0xa9b7c6);
+
+            panel.setBackground(darkBackground);
+            centerPanel.setBackground(darkBackground);
+            spinnerPanel.setBackground(darkBackground);
+            messagePanel.setBackground(darkBackground);
+
+            loadingLabel.setForeground(darkForeground);
+            messageLabel.setForeground(darkForeground);
+        }
 
         // Center the content
         panel.add(centerPanel, BorderLayout.CENTER);
@@ -170,7 +229,10 @@ public class CodeExplanationDialog extends DialogWrapper {
      */
     private String markdownToHtml(String markdown) {
         if (markdown == null || markdown.isEmpty()) {
-            return "<html><body></body></html>";
+            String bodyStyle = isDarkTheme
+                    ? "<html><body style=\"background-color: #2b2b2b; color: #a9b7c6;\"></body></html>"
+                    : "<html><body></body></html>";
+            return bodyStyle;
         }
 
         // Escape HTML special characters
@@ -230,6 +292,10 @@ public class CodeExplanationDialog extends DialogWrapper {
         html = html.replaceAll("<p><li>", "<li>");
         html = html.replaceAll("</li></p>", "</li>");
 
-        return "<html><body>" + html + "</body></html>";
+        // Add theme-specific body styling
+        String bodyStyle = isDarkTheme
+                ? "<html><body style=\"background-color: #2b2b2b; color: #a9b7c6;\">"
+                : "<html><body>";
+        return bodyStyle + html + "</body></html>";
     }
 }
