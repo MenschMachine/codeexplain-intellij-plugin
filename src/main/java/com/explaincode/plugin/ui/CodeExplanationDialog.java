@@ -8,7 +8,11 @@ import com.intellij.util.ui.JBUI;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import java.awt.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Dialog for displaying code explanation in a more user-friendly way.
@@ -16,7 +20,7 @@ import java.awt.*;
 public class CodeExplanationDialog extends DialogWrapper {
     private String explanation;
     private final String selectedCode;
-    private JTextArea explanationText;
+    private JEditorPane explanationText;
     private JPanel loadingPanel;
     private JTabbedPane tabbedPane;
     private JBPanel<JBPanel<?>> explanationPanel;
@@ -58,12 +62,28 @@ public class CodeExplanationDialog extends DialogWrapper {
         // Create loading panel with spinner
         loadingPanel = createLoadingPanel();
 
-        // Create explanation text area
-        explanationText = new JTextArea(explanation);
+        // Create explanation editor pane with HTML support
+        explanationText = new JEditorPane();
         explanationText.setEditable(false);
-        explanationText.setLineWrap(true);
-        explanationText.setWrapStyleWord(true);
-        explanationText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        explanationText.setContentType("text/html");
+
+        // Set up HTML styling
+        HTMLEditorKit kit = new HTMLEditorKit();
+        explanationText.setEditorKit(kit);
+        StyleSheet styleSheet = kit.getStyleSheet();
+        styleSheet.addRule("body { font-family: sans-serif; font-size: 12pt; margin: 10px; }");
+        styleSheet.addRule("pre { background-color: #f5f5f5; padding: 10px; font-family: monospace; }");
+        styleSheet.addRule("code { background-color: #f5f5f5; padding: 2px 4px; font-family: monospace; }");
+        styleSheet.addRule("h1, h2, h3, h4, h5, h6 { margin-top: 20px; margin-bottom: 10px; }");
+        styleSheet.addRule("p { margin-top: 10px; margin-bottom: 10px; }");
+        styleSheet.addRule("ul, ol { margin-top: 10px; margin-bottom: 10px; }");
+
+        // Set the content
+        String htmlContent = explanation.equals("Loading explanation...") ? 
+                "<html><body>Loading explanation...</body></html>" : 
+                markdownToHtml(explanation);
+        explanationText.setText(htmlContent);
+
         JBScrollPane explanationScrollPane = new JBScrollPane(explanationText);
 
         // Add the appropriate component based on whether we're loading or not
@@ -126,7 +146,10 @@ public class CodeExplanationDialog extends DialogWrapper {
      */
     public void updateExplanation(String newExplanation) {
         this.explanation = newExplanation;
-        explanationText.setText(newExplanation);
+
+        // Convert markdown to HTML and set the text
+        String htmlContent = markdownToHtml(newExplanation);
+        explanationText.setText(htmlContent);
 
         // Replace loading panel with explanation text
         explanationPanel.removeAll();
@@ -136,5 +159,77 @@ public class CodeExplanationDialog extends DialogWrapper {
         // Refresh the UI
         explanationPanel.revalidate();
         explanationPanel.repaint();
+    }
+
+    /**
+     * Converts markdown text to HTML for display in the JEditorPane.
+     * This is a simple implementation that handles common markdown elements.
+     * 
+     * @param markdown The markdown text to convert
+     * @return HTML representation of the markdown
+     */
+    private String markdownToHtml(String markdown) {
+        if (markdown == null || markdown.isEmpty()) {
+            return "<html><body></body></html>";
+        }
+
+        // Escape HTML special characters
+        String html = markdown.replace("&", "&amp;")
+                             .replace("<", "&lt;")
+                             .replace(">", "&gt;");
+
+        // Convert markdown to HTML
+
+        // Headers
+        html = html.replaceAll("(?m)^# (.*?)$", "<h1>$1</h1>");
+        html = html.replaceAll("(?m)^## (.*?)$", "<h2>$1</h2>");
+        html = html.replaceAll("(?m)^### (.*?)$", "<h3>$1</h3>");
+        html = html.replaceAll("(?m)^#### (.*?)$", "<h4>$1</h4>");
+        html = html.replaceAll("(?m)^##### (.*?)$", "<h5>$1</h5>");
+        html = html.replaceAll("(?m)^###### (.*?)$", "<h6>$1</h6>");
+
+        // Bold
+        html = html.replaceAll("\\*\\*(.*?)\\*\\*", "<strong>$1</strong>");
+        html = html.replaceAll("__(.*?)__", "<strong>$1</strong>");
+
+        // Italic
+        html = html.replaceAll("\\*(.*?)\\*", "<em>$1</em>");
+        html = html.replaceAll("_(.*?)_", "<em>$1</em>");
+
+        // Code blocks
+        Pattern codeBlockPattern = Pattern.compile("```(.*?)```", Pattern.DOTALL);
+        Matcher codeBlockMatcher = codeBlockPattern.matcher(html);
+        StringBuffer sb = new StringBuffer();
+        while (codeBlockMatcher.find()) {
+            String codeContent = codeBlockMatcher.group(1).trim();
+            codeBlockMatcher.appendReplacement(sb, "<pre><code>" + codeContent + "</code></pre>");
+        }
+        codeBlockMatcher.appendTail(sb);
+        html = sb.toString();
+
+        // Inline code
+        html = html.replaceAll("`([^`]*?)`", "<code>$1</code>");
+
+        // Lists
+        html = html.replaceAll("(?m)^- (.*?)$", "<li>$1</li>");
+        html = html.replaceAll("(?m)^\\* (.*?)$", "<li>$1</li>");
+        html = html.replaceAll("(?m)^\\d+\\. (.*?)$", "<li>$1</li>");
+
+        // Wrap lists in <ul> or <ol> tags
+        // This is a simplified approach and might not handle nested lists correctly
+        html = html.replaceAll("(<li>.*?</li>)+", "<ul>$0</ul>");
+
+        // Links
+        html = html.replaceAll("\\[(.*?)\\]\\((.*?)\\)", "<a href=\"$2\">$1</a>");
+
+        // Paragraphs
+        html = html.replaceAll("(?m)^([^<].*?)$", "<p>$1</p>");
+
+        // Clean up any empty paragraphs or duplicate tags
+        html = html.replaceAll("<p>\\s*</p>", "");
+        html = html.replaceAll("<p><li>", "<li>");
+        html = html.replaceAll("</li></p>", "</li>");
+
+        return "<html><body>" + html + "</body></html>";
     }
 }
