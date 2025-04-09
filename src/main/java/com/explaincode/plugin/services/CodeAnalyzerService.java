@@ -2,6 +2,7 @@ package com.explaincode.plugin.services;
 
 import com.explaincode.plugin.models.CodeAnalysisRequest;
 import com.google.gson.Gson;
+import com.intellij.openapi.Disposable;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
@@ -13,21 +14,31 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Service for analyzing code elements by making REST calls to an external API.
  * This service sends the selected code and its context to the API and returns the explanation.
+ * Implements Disposable to ensure resources like HttpClient's executor are cleaned up.
  */
-public class CodeAnalyzerService {
+public class CodeAnalyzerService implements Disposable {
 
     private final String API_URL = "https://api.codeexplain.xyz/api/v1/explain";
     private final HttpClient httpClient;
     private final Gson gson;
+    private final ExecutorService executorService; // Added for managing HttpClient threads
 
     public CodeAnalyzerService() {
+        // Create a dedicated executor for the HttpClient
+        // Using a cached thread pool, adjust if needed based on expected load
+        executorService = Executors.newCachedThreadPool();
+
         httpClient = HttpClient.newBuilder()
+                .executor(executorService) // Use the custom executor
                 .version(HttpClient.Version.HTTP_2)
                 .connectTimeout(Duration.ofSeconds(10))
                 .build();
@@ -139,4 +150,26 @@ public class CodeAnalyzerService {
         return null;
     }
 
+    @Override
+    public void dispose() {
+        // Shut down the executor service gracefully when the plugin is unloaded
+        // or the application shuts down.
+        executorService.shutdown();
+        try {
+            // Wait a reasonable time for existing tasks to terminate
+            if (!executorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                executorService.shutdownNow(); // Cancel currently executing tasks forcefully
+                // Wait again for tasks to respond to being cancelled
+                if (!executorService.awaitTermination(5, TimeUnit.SECONDS))
+                    System.err.println("CodeAnalyzerService HttpClient executor did not terminate");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            executorService.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
+        // Note: The HttpClient itself doesn't have a direct close/shutdown method.
+        // Shutting down its associated executor is the standard way to release its threads.
+    }
 }
