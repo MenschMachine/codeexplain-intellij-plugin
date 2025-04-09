@@ -1,5 +1,7 @@
 package com.explaincode.plugin.services;
 
+import com.explaincode.plugin.models.CodeAnalysisRequest;
+import com.google.gson.Gson;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +27,7 @@ public class CodeAnalyzerService {
             .version(HttpClient.Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(10))
             .build();
+    private static final Gson gson = new Gson();
 
     /**
      * Analyzes the given PSI element and its context to provide a detailed explanation.
@@ -38,10 +41,11 @@ public class CodeAnalyzerService {
         // Get surrounding context
         String context = getSurroundingContext(element);
 
-        // Create JSON payload
-        String jsonPayload = String.format("{\"selectedCode\": %s, \"context\": %s}",
-                escapeJsonString(selectedText),
-                escapeJsonString(context));
+        // Create request object
+        CodeAnalysisRequest requestObj = new CodeAnalysisRequest(selectedText, context, "markdown");
+
+        // Serialize to JSON
+        String jsonPayload = gson.toJson(requestObj);
 
         // Make the API call
         HttpRequest request = HttpRequest.newBuilder()
@@ -57,8 +61,8 @@ public class CodeAnalyzerService {
                         // Parse the JSON response to extract the explanation
                         String responseBody = response.body();
                         String explanation = extractExplanationFromJson(responseBody);
-                        return explanation != null ? explanation : 
-                               "Error: Could not extract explanation from API response: " + responseBody;
+                        return explanation != null ? explanation :
+                                "Error: Could not extract explanation from API response: " + responseBody;
                     } else {
                         return "Error: Failed to get explanation from API. Status code: " + response.statusCode() +
                                 "\nResponse: " + response.body();
@@ -105,7 +109,7 @@ public class CodeAnalyzerService {
 
     /**
      * Extracts the explanation value from a JSON response.
-     * 
+     *
      * @param jsonResponse The JSON response from the API
      * @return The extracted explanation value, or null if not found
      */
@@ -124,62 +128,15 @@ public class CodeAnalyzerService {
             String explanation = matcher.group(1);
             // Unescape JSON escape sequences
             return explanation.replace("\\\"", "\"")
-                             .replace("\\\\", "\\")
-                             .replace("\\n", "\n")
-                             .replace("\\r", "\r")
-                             .replace("\\t", "\t")
-                             .replace("\\b", "\b")
-                             .replace("\\f", "\f");
+                    .replace("\\\\", "\\")
+                    .replace("\\n", "\n")
+                    .replace("\\r", "\r")
+                    .replace("\\t", "\t")
+                    .replace("\\b", "\b")
+                    .replace("\\f", "\f");
         }
 
         return null;
     }
 
-    /**
-     * Escapes a string for use in JSON.
-     */
-    private String escapeJsonString(String input) {
-        if (input == null) {
-            return "null";
-        }
-
-        StringBuilder sb = new StringBuilder("\"");
-        for (int i = 0; i < input.length(); i++) {
-            char c = input.charAt(i);
-            switch (c) {
-                case '\\':
-                case '"':
-                    sb.append('\\').append(c);
-                    break;
-                case '\b':
-                    sb.append("\\b");
-                    break;
-                case '\f':
-                    sb.append("\\f");
-                    break;
-                case '\n':
-                    sb.append("\\n");
-                    break;
-                case '\r':
-                    sb.append("\\r");
-                    break;
-                case '\t':
-                    sb.append("\\t");
-                    break;
-                default:
-                    if (c < ' ') {
-                        String hex = Integer.toHexString(c);
-                        sb.append("\\u");
-                        for (int j = 0; j < 4 - hex.length(); j++) {
-                            sb.append('0');
-                        }
-                        sb.append(hex);
-                    } else {
-                        sb.append(c);
-                    }
-            }
-        }
-        sb.append('"');
-        return sb.toString();
-    }
 }
