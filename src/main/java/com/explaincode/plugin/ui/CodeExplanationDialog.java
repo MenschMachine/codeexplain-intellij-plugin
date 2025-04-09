@@ -177,29 +177,6 @@ public class CodeExplanationDialog extends DialogWrapper {
             JBScrollPane htmlSourceScrollPane = new JBScrollPane(htmlSourceText);
             htmlSourcePanel.add(htmlSourceScrollPane, BorderLayout.CENTER);
             tabbedPane.addTab("HTML Source", htmlSourcePanel);
-
-            // Add Original Markdown tab
-            JBPanel<JBPanel<?>> markdownPanel = new JBPanel<>(new BorderLayout());
-            JTextArea markdownText = new JTextArea(explanation);
-            markdownText.setEditable(false);
-            markdownText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-
-            // Apply theme-specific styling to the markdown text area
-            if (isDarkTheme) {
-                // Dark theme colors
-                markdownText.setBackground(new Color(0x2d2d2d));
-                markdownText.setForeground(new Color(0xf8f8f2));
-                markdownText.setCaretColor(new Color(0xf8f8f2));
-            } else {
-                // Light theme colors
-                markdownText.setBackground(new Color(0xf5f5f5));
-                markdownText.setForeground(new Color(0x000000));
-                markdownText.setCaretColor(new Color(0x000000));
-            }
-
-            JBScrollPane markdownScrollPane = new JBScrollPane(markdownText);
-            markdownPanel.add(markdownScrollPane, BorderLayout.CENTER);
-            tabbedPane.addTab("Original Markdown", markdownPanel);
         }
 
         panel.add(tabbedPane, BorderLayout.CENTER);
