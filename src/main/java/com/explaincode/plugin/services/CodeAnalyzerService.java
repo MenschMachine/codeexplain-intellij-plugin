@@ -22,12 +22,17 @@ import java.util.regex.Pattern;
  */
 public class CodeAnalyzerService {
 
-    private static final String API_URL = "https://api.codeexplain.xyz/api/v1/explain";
-    private static final HttpClient httpClient = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_2)
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
-    private static final Gson gson = new Gson();
+    private final String API_URL = "https://api.codeexplain.xyz/api/v1/explain";
+    private final HttpClient httpClient;
+    private final Gson gson;
+
+    public CodeAnalyzerService() {
+        httpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_2)
+                .connectTimeout(Duration.ofSeconds(10))
+                .build();
+        gson = new Gson();
+    }
 
     /**
      * Analyzes the given PSI element and its context to provide a detailed explanation.
