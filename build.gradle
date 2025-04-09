@@ -3,7 +3,7 @@ plugins {
     id 'org.jetbrains.intellij' version '1.17.0'
 }
 
-group 'com.explaincode'
+group 'xyz.codeexplain'
 version '1.0-SNAPSHOT'
 
 repositories {

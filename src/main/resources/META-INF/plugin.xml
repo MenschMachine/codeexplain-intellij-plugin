@@ -1,7 +1,7 @@
-<idea-plugin dynamic-plugin="true" require-restart="false">
-    <id>com.explaincode.plugin</id>
+<idea-plugin require-restart="false">
+    <id>xyz.codeexplain.plugin</id>
     <name>Explain Selected Code</name>
-    <vendor email="support@codeexplain.xyz" url="https://www.codeexplain.xyz">ExplainCode</vendor>
+    <vendor email="support@codeexplain.xyz" url="https://www.codeexplain.xyz">CodeExplain</vendor>
 
     <description><![CDATA[
     A plugin that displays information about selected code in the editor.

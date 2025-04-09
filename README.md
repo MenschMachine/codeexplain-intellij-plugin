@@ -90,7 +90,7 @@ publishPlugin {
 ```
 
 2. Ensure your plugin metadata in `plugin.xml` is complete and accurate:
-   - Plugin ID: `com.explaincode.plugin`
+   - Plugin ID: `xyz.codeexplain.plugin`
    - Name: `Explain Selected Code`
    - Vendor information
    - Description

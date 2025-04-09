@@ -16,7 +16,14 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiUtilBase;
 import org.jetbrains.annotations.NotNull;
+import com.intellij.codeInsight.hint.HintManager;
+import com.intellij.ui.components.JBLabel;
+import com.intellij.util.ui.UIUtil;
+import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.util.IconLoader;
 
+import javax.swing.*;
+import java.awt.FlowLayout;
 import java.util.Objects;
 
 /**
@@ -61,16 +68,26 @@ public class ExplainSelectedCodeAction extends AnAction {
         }
 
         // Analyze the selected code and display information
-        analyzeAndExplainCode(project, element, selectedText);
+        analyzeAndExplainCode(project, element, selectedText, editor);
     }
 
     private void analyzeAndExplainCode(Project project, PsiElement element,
-                                       String selectedText) {
-
+                                       String selectedText, Editor editor) {
         String context = getSurroundingContext(element);
-        // Get the CodeAnalyzerService from the application service registry
         CodeAnalyzerService analyzerService = com.intellij.openapi.application.ApplicationManager.getApplication()
                 .getService(CodeAnalyzerService.class);
+
+        // Create a loading hint near the cursor
+        JComponent loadingHint = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        loadingHint.setOpaque(false);
+        JBLabel loadingLabel = new JBLabel("Analyzing...", IconLoader.getIcon("/icons/explain_code.svg", ExplainSelectedCodeAction.class), SwingConstants.LEFT);
+        loadingHint.add(loadingLabel);
+
+        // Show the hint near the editor caret
+        HintManager.getInstance().showInformationHint(
+                editor,
+                loadingHint
+        );
 
         // Show loading indicator in the background and make the API call without blocking the UI
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Analyzing Code", true) {
@@ -82,16 +99,17 @@ public class ExplainSelectedCodeAction extends AnAction {
                 indicator.setIndeterminate(true);
 
                 try {
-                    // Make the API call and wait for the result
                     explanation = analyzerService.analyzeCodeAsync(element, selectedText, context).get();
                 } catch (Exception e) {
                     explanation = "Error: Failed to get explanation from API. Exception: " + e.getMessage();
+                } finally {
+                    // Hide the hint when done
+                    ApplicationManager.getApplication().invokeLater(() -> HintManager.getInstance().hideAllHints());
                 }
             }
 
             @Override
             public void onSuccess() {
-                // Show dialog with the explanation
                 CodeExplanationDialog dialog = new CodeExplanationDialog(project, explanation, selectedText);
                 dialog.show();
             }

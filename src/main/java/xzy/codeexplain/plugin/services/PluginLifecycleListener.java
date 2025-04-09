@@ -33,7 +33,7 @@ public class PluginLifecycleListener implements DynamicPluginListener {
                 .getService(CodeAnalyzerService.class);
 
         // Clean up resources if it's our plugin
-        if (pluginDescriptor.getPluginId().getIdString().equals("com.explaincode.plugin")) {
+        if (pluginDescriptor.getPluginId().getIdString().equals("xyz.codeexplain.plugin")) {
             // Dispose of any resources that need to be cleaned up
             if (analyzerService != null) {
                 try {
