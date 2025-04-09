@@ -1,35 +1,25 @@
 package com.explaincode.plugin.config;
 
+import com.intellij.openapi.components.Service;
+
 /**
  * Configuration class for the Explain Code plugin.
  * Contains settings that can be used throughout the plugin.
+ * Implemented as an application service for proper lifecycle management.
  */
-public class PluginConfig {
-    // Singleton instance
-    private static PluginConfig instance;
-    
+@Service
+public final class PluginConfig {
+
     // Configuration properties
     private boolean debugMode = false;
-    
+
     /**
-     * Private constructor to enforce singleton pattern
+     * Constructor for the service
      */
-    private PluginConfig() {
+    public PluginConfig() {
         // Initialize with default values
     }
-    
-    /**
-     * Get the singleton instance of the configuration
-     * 
-     * @return The PluginConfig instance
-     */
-    public static synchronized PluginConfig getInstance() {
-        if (instance == null) {
-            instance = new PluginConfig();
-        }
-        return instance;
-    }
-    
+
     /**
      * Check if debug mode is enabled
      * 
@@ -38,7 +28,7 @@ public class PluginConfig {
     public boolean isDebugMode() {
         return debugMode;
     }
-    
+
     /**
      * Set the debug mode
      * 

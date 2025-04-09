@@ -6,6 +6,7 @@ import com.explaincode.plugin.ui.CodeExplanationDialog;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
 import com.intellij.openapi.progress.ProgressIndicator;
@@ -22,21 +23,6 @@ import org.jetbrains.annotations.NotNull;
  * Action that analyzes and explains the currently selected code in the editor.
  */
 public class ExplainSelectedCodeAction extends AnAction {
-
-    // Static initializer to set debug mode from system property or environment variable
-    static {
-        // Check for system property first
-        String debugProperty = System.getProperty("explaincode.debug");
-        if (debugProperty != null && (debugProperty.equalsIgnoreCase("true") || debugProperty.equals("1"))) {
-            PluginConfig.getInstance().setDebugMode(true);
-        } else {
-            // Check for environment variable if system property is not set
-            String debugEnv = System.getenv("EXPLAINCODE_DEBUG");
-            if (debugEnv != null && (debugEnv.equalsIgnoreCase("true") || debugEnv.equals("1"))) {
-                PluginConfig.getInstance().setDebugMode(true);
-            }
-        }
-    }
 
     @Override
     public void update(@NotNull AnActionEvent e) {

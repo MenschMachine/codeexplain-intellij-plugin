@@ -1,6 +1,7 @@
 package com.explaincode.plugin.ui;
 
 import com.explaincode.plugin.config.PluginConfig;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBPanel;
@@ -153,7 +154,8 @@ public class CodeExplanationDialog extends DialogWrapper {
         tabbedPane.addTab("Selected Code", codePanel);
 
         // Add HTML Source tab if debug mode is enabled
-        if (PluginConfig.getInstance().isDebugMode()) {
+        PluginConfig config = ApplicationManager.getApplication().getService(PluginConfig.class);
+        if (config.isDebugMode()) {
             JBPanel<JBPanel<?>> htmlSourcePanel = new JBPanel<>(new BorderLayout());
             JTextArea htmlSourceText = new JTextArea(htmlSource);
             htmlSourceText.setEditable(false);
@@ -271,7 +273,8 @@ public class CodeExplanationDialog extends DialogWrapper {
         explanationPanel.add(explanationScrollPane, BorderLayout.CENTER);
 
         // Update HTML Source tab if debug mode is enabled
-        if (PluginConfig.getInstance().isDebugMode()) {
+        PluginConfig config = ApplicationManager.getApplication().getService(PluginConfig.class);
+        if (config.isDebugMode()) {
             // Check if the HTML Source tab exists
             for (int i = 0; i < tabbedPane.getTabCount(); i++) {
                 if ("HTML Source".equals(tabbedPane.getTitleAt(i))) {
