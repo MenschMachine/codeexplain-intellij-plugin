@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '1.17.1'
+    id 'org.jetbrains.intellij' version '0.0.2'
 }
 
 group 'xyz.codeexplain'
-version '0.0.1-SNAPSHOT'
+version '0.0.2'
 
 repositories {
     mavenCentral()
