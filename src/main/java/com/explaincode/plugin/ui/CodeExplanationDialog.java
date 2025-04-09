@@ -83,9 +83,9 @@ public class CodeExplanationDialog extends DialogWrapper {
 
         // Apply common styles
         styleSheet.addRule("body { font-family: sans-serif; font-size: 12pt; margin: 10px; }");
-        styleSheet.addRule("h1, h2, h3, h4, h5, h6 { margin-top: 20px; margin-bottom: 10px; }");
-        styleSheet.addRule("p { margin-top: 10px; margin-bottom: 10px; }");
-        styleSheet.addRule("ul, ol { margin-top: 10px; margin-bottom: 10px; }");
+        styleSheet.addRule("h1, h2, h3, h4, h5, h6 { margin: 8px; }");
+        styleSheet.addRule("p { margin: 8px; }");
+        styleSheet.addRule("ul, ol { margin: 4px; }");
 
         // Apply theme-specific styles
         if (isDarkTheme) {
@@ -231,7 +231,7 @@ public class CodeExplanationDialog extends DialogWrapper {
 
     /**
      * Updates the dialog with the explanation received from the API.
-     * 
+     *
      * @param newExplanation The explanation text to display
      */
     public void updateExplanation(String newExplanation) {
@@ -282,7 +282,7 @@ public class CodeExplanationDialog extends DialogWrapper {
     /**
      * Converts markdown text to HTML for display in the JEditorPane.
      * This is a simple implementation that handles common markdown elements.
-     * 
+     *
      * @param markdown The markdown text to convert
      * @return HTML representation of the markdown
      */
@@ -296,8 +296,8 @@ public class CodeExplanationDialog extends DialogWrapper {
 
         // Escape HTML special characters
         String html = markdown.replace("&", "&amp;")
-                             .replace("<", "&lt;")
-                             .replace(">", "&gt;");
+                .replace("<", "&lt;")
+                .replace(">", "&gt;");
 
         // Convert markdown to HTML
 
