@@ -1,4 +1,4 @@
-package com.explaincode.plugin.models;
+package xzy.codeexplain.plugin.models;
 
 /**
  * Model class representing a code analysis request payload.

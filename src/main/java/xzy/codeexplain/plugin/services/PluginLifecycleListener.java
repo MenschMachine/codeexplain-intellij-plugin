@@ -1,4 +1,4 @@
-package com.explaincode.plugin.services;
+package xzy.codeexplain.plugin.services;
 
 import com.intellij.ide.plugins.DynamicPluginListener;
 import com.intellij.ide.plugins.IdeaPluginDescriptor;

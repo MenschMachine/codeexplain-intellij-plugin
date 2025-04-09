@@ -1,10 +1,8 @@
-package com.explaincode.plugin.services;
+package xzy.codeexplain.plugin.services;
 
-import com.explaincode.plugin.models.CodeAnalysisRequest;
+import xzy.codeexplain.plugin.models.CodeAnalysisRequest;
 import com.google.gson.Gson;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
 
 import java.net.URI;
@@ -13,11 +11,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static com.intellij.icons.AllIcons.RunConfigurations.Application;
 
 /**
  * Service for analyzing code elements by making REST calls to an external API.

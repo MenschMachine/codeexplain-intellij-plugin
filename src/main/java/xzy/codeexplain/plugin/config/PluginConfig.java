@@ -1,4 +1,4 @@
-package com.explaincode.plugin.config;
+package xzy.codeexplain.plugin.config;
 
 /**
  * Configuration class for the Explain Code plugin.

@@ -12,17 +12,17 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Register the code analyzer service -->
-        <applicationService serviceImplementation="com.explaincode.plugin.services.CodeAnalyzerService"/>
+        <applicationService serviceImplementation="xzy.codeexplain.plugin.services.CodeAnalyzerService"/>
     </extensions>
 
     <applicationListeners>
         <!-- Register the plugin lifecycle listener -->
-        <listener class="com.explaincode.plugin.services.PluginLifecycleListener"
+        <listener class="xzy.codeexplain.plugin.services.PluginLifecycleListener"
                   topic="com.intellij.ide.plugins.DynamicPluginListener"/>
     </applicationListeners>
 
     <actions>
-        <action id="ExplainSelectedCode" class="com.explaincode.plugin.actions.ExplainSelectedCodeAction"
+        <action id="ExplainSelectedCode" class="xzy.codeexplain.plugin.actions.ExplainSelectedCodeAction"
                 text="Explain Selected Code" description="Analyze and explain the selected code"
                 icon="/icons/explain_code.svg">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>

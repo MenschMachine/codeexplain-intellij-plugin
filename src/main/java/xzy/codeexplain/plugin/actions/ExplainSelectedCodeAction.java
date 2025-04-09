@@ -1,7 +1,7 @@
-package com.explaincode.plugin.actions;
+package xzy.codeexplain.plugin.actions;
 
-import com.explaincode.plugin.services.CodeAnalyzerService;
-import com.explaincode.plugin.ui.CodeExplanationDialog;
+import xzy.codeexplain.plugin.services.CodeAnalyzerService;
+import xzy.codeexplain.plugin.ui.CodeExplanationDialog;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;

@@ -1,6 +1,6 @@
-package com.explaincode.plugin.ui;
+package xzy.codeexplain.plugin.ui;
 
-import com.explaincode.plugin.config.PluginConfig;
+import xzy.codeexplain.plugin.config.PluginConfig;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBPanel;
