@@ -1,5 +1,6 @@
 package com.explaincode.plugin.actions;
 
+import com.explaincode.plugin.config.PluginConfig;
 import com.explaincode.plugin.services.CodeAnalyzerService;
 import com.explaincode.plugin.ui.CodeExplanationDialog;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -22,11 +23,26 @@ import org.jetbrains.annotations.NotNull;
  */
 public class ExplainSelectedCodeAction extends AnAction {
 
+    // Static initializer to set debug mode from system property or environment variable
+    static {
+        // Check for system property first
+        String debugProperty = System.getProperty("explaincode.debug");
+        if (debugProperty != null && (debugProperty.equalsIgnoreCase("true") || debugProperty.equals("1"))) {
+            PluginConfig.getInstance().setDebugMode(true);
+        } else {
+            // Check for environment variable if system property is not set
+            String debugEnv = System.getenv("EXPLAINCODE_DEBUG");
+            if (debugEnv != null && (debugEnv.equalsIgnoreCase("true") || debugEnv.equals("1"))) {
+                PluginConfig.getInstance().setDebugMode(true);
+            }
+        }
+    }
+
     @Override
     public void update(@NotNull AnActionEvent e) {
         // Enable the action only when there's a selection in the editor
         Editor editor = e.getData(CommonDataKeys.EDITOR);
-        e.getPresentation().setEnabledAndVisible(editor != null && 
+        e.getPresentation().setEnabledAndVisible(editor != null &&
                 editor.getSelectionModel().hasSelection());
     }
 
@@ -63,8 +79,8 @@ public class ExplainSelectedCodeAction extends AnAction {
         analyzeAndExplainCode(project, psiFile, element, selectedText, startOffset, endOffset);
     }
 
-    private void analyzeAndExplainCode(Project project, PsiFile psiFile, PsiElement element, 
-                                      String selectedText, int startOffset, int endOffset) {
+    private void analyzeAndExplainCode(Project project, PsiFile psiFile, PsiElement element,
+                                       String selectedText, int startOffset, int endOffset) {
         // Get the CodeAnalyzerService from the application service registry
         CodeAnalyzerService analyzerService = com.intellij.openapi.application.ApplicationManager.getApplication()
                 .getService(CodeAnalyzerService.class);
@@ -81,12 +97,6 @@ public class ExplainSelectedCodeAction extends AnAction {
                 try {
                     // Make the API call and wait for the result
                     explanation = analyzerService.analyzeCodeAsync(element, selectedText).get();
-
-                    // Add file information
-                    StringBuilder fullExplanation = new StringBuilder(explanation);
-                    fullExplanation.append("\n\nFile: ").append(psiFile.getName());
-                    fullExplanation.append("\nSelection Range: ").append(startOffset).append(" - ").append(endOffset);
-                    explanation = fullExplanation.toString();
                 } catch (Exception e) {
                     explanation = "Error: Failed to get explanation from API. Exception: " + e.getMessage();
                 }

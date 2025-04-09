@@ -127,16 +127,43 @@ public class CodeAnalyzerService {
             // Group 1 contains the value inside the quotes
             String explanation = matcher.group(1);
             // Unescape JSON escape sequences
-            return explanation.replace("\\\"", "\"")
+            String unescaped = explanation.replace("\\\"", "\"")
                     .replace("\\\\", "\\")
                     .replace("\\n", "\n")
                     .replace("\\r", "\r")
                     .replace("\\t", "\t")
                     .replace("\\b", "\b")
                     .replace("\\f", "\f");
+
+            // Remove superfluous newlines to make the markdown more dense
+            return removeSuperfluousNewlines(unescaped);
         }
 
         return null;
     }
 
+    /**
+     * Removes superfluous newlines from markdown text to make it more dense.
+     * Preserves newlines that are necessary for markdown formatting.
+     *
+     * @param markdown The markdown text to process
+     * @return The processed markdown with unnecessary newlines removed
+     */
+    private String removeSuperfluousNewlines(String markdown) {
+        if (markdown == null || markdown.isEmpty()) {
+            return markdown;
+        }
+
+        // Replace multiple consecutive newlines with a single newline
+        String result = markdown.replaceAll("\\n{3,}", "\n\n");
+
+        // Remove empty lines that don't contribute to markdown structure
+        result = result.replaceAll("(?m)^[ \t]*\n", "\n");
+
+        // Remove newlines after certain markdown elements where they're not needed
+        // This preserves the newline after headers, code blocks, etc.
+        result = result.replaceAll("([^\\n])\\n([^\\n#\\-*\\d>])", "$1 $2");
+
+        return result;
+    }
 }

@@ -1,5 +1,6 @@
 package com.explaincode.plugin.ui;
 
+import com.explaincode.plugin.config.PluginConfig;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.DialogWrapper;
 import com.intellij.ui.components.JBPanel;
@@ -21,6 +22,7 @@ import java.util.regex.Pattern;
 public class CodeExplanationDialog extends DialogWrapper {
     private String explanation;
     private final String selectedCode;
+    private String htmlSource; // Store the HTML source for debug mode
     private JEditorPane explanationText;
     private JPanel loadingPanel;
     private JTabbedPane tabbedPane;
@@ -34,6 +36,7 @@ public class CodeExplanationDialog extends DialogWrapper {
         super(project);
         this.explanation = "Loading explanation...";
         this.selectedCode = selectedCode;
+        this.htmlSource = ""; // Initialize HTML source
         setTitle("Code Explanation");
         init();
     }
@@ -45,6 +48,7 @@ public class CodeExplanationDialog extends DialogWrapper {
         super(project);
         this.explanation = explanation;
         this.selectedCode = selectedCode;
+        this.htmlSource = ""; // Initialize HTML source
         setTitle("Code Explanation");
         init();
     }
@@ -107,8 +111,10 @@ public class CodeExplanationDialog extends DialogWrapper {
                     ? "<html><body style=\"background-color: #2b2b2b; color: #a9b7c6;\">Loading explanation...</body></html>"
                     : "<html><body>Loading explanation...</body></html>";
             htmlContent = bodyStyle;
+            this.htmlSource = htmlContent;
         } else {
             htmlContent = markdownToHtml(explanation);
+            this.htmlSource = htmlContent;
         }
         explanationText.setText(htmlContent);
 
@@ -145,6 +151,31 @@ public class CodeExplanationDialog extends DialogWrapper {
         JBScrollPane codeScrollPane = new JBScrollPane(codeText);
         codePanel.add(codeScrollPane, BorderLayout.CENTER);
         tabbedPane.addTab("Selected Code", codePanel);
+
+        // Add HTML Source tab if debug mode is enabled
+        if (PluginConfig.getInstance().isDebugMode()) {
+            JBPanel<JBPanel<?>> htmlSourcePanel = new JBPanel<>(new BorderLayout());
+            JTextArea htmlSourceText = new JTextArea(htmlSource);
+            htmlSourceText.setEditable(false);
+            htmlSourceText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+
+            // Apply theme-specific styling to the HTML source text area
+            if (isDarkTheme) {
+                // Dark theme colors
+                htmlSourceText.setBackground(new Color(0x2d2d2d));
+                htmlSourceText.setForeground(new Color(0xf8f8f2));
+                htmlSourceText.setCaretColor(new Color(0xf8f8f2));
+            } else {
+                // Light theme colors
+                htmlSourceText.setBackground(new Color(0xf5f5f5));
+                htmlSourceText.setForeground(new Color(0x000000));
+                htmlSourceText.setCaretColor(new Color(0x000000));
+            }
+
+            JBScrollPane htmlSourceScrollPane = new JBScrollPane(htmlSourceText);
+            htmlSourcePanel.add(htmlSourceScrollPane, BorderLayout.CENTER);
+            tabbedPane.addTab("HTML Source", htmlSourcePanel);
+        }
 
         panel.add(tabbedPane, BorderLayout.CENTER);
 
@@ -208,12 +239,40 @@ public class CodeExplanationDialog extends DialogWrapper {
 
         // Convert markdown to HTML and set the text
         String htmlContent = markdownToHtml(newExplanation);
+        this.htmlSource = htmlContent; // Store the HTML source
         explanationText.setText(htmlContent);
 
         // Replace loading panel with explanation text
         explanationPanel.removeAll();
         JBScrollPane explanationScrollPane = new JBScrollPane(explanationText);
         explanationPanel.add(explanationScrollPane, BorderLayout.CENTER);
+
+        // Update HTML Source tab if debug mode is enabled
+        if (PluginConfig.getInstance().isDebugMode()) {
+            // Check if the HTML Source tab exists
+            for (int i = 0; i < tabbedPane.getTabCount(); i++) {
+                if ("HTML Source".equals(tabbedPane.getTitleAt(i))) {
+                    // Get the component at this tab
+                    Component component = tabbedPane.getComponentAt(i);
+                    if (component instanceof JBPanel) {
+                        JBPanel<?> panel = (JBPanel<?>) component;
+                        // Find the JTextArea inside the panel
+                        for (Component c : panel.getComponents()) {
+                            if (c instanceof JBScrollPane) {
+                                JBScrollPane scrollPane = (JBScrollPane) c;
+                                Component view = scrollPane.getViewport().getView();
+                                if (view instanceof JTextArea) {
+                                    JTextArea textArea = (JTextArea) view;
+                                    textArea.setText(htmlSource);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                }
+            }
+        }
 
         // Refresh the UI
         explanationPanel.revalidate();

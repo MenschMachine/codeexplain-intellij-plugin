@@ -39,10 +39,32 @@ This guide provides detailed instructions on how to install, publish, set up you
 
 1. Open any code file in your JetBrains IDE
 2. Select a piece of code
-3. Right-click and select "Explain Selected Code" from the context menu (or use Alt+E shortcut)
+3. Right-click and select "Explain Selected Code" from the context menu (or use Alt+Shift+E shortcut)
 4. A dialog will appear with an explanation of the selected code
 
 The plugin works with any programming language supported by your JetBrains IDE.
+
+### Debug Mode
+
+The plugin includes a DEBUG mode that can be enabled to show the HTML source code of the explanation in a third tab of the dialog.
+
+#### Enabling Debug Mode
+
+Debug mode can be enabled in one of two ways:
+
+1. **System Property**:
+   ```
+   -Dexplaincode.debug=true
+   ```
+   Add this to your IDE's VM options.
+
+2. **Environment Variable**:
+   ```
+   EXPLAINCODE_DEBUG=true
+   ```
+   Set this environment variable before starting your IDE.
+
+When DEBUG mode is enabled, the explanation dialog will show a third tab labeled "HTML Source" that displays the raw HTML code used to render the explanation.
 
 ## Publishing Guide
 
@@ -162,7 +184,7 @@ This will launch a new IntelliJ IDEA instance with the plugin installed.
 1. In the development instance, create or open a Java project
 2. Open a Java file
 3. Select a piece of code (e.g., a method, class, or statement)
-4. Right-click and select "Explain Selected Code" from the context menu (or use Alt+E shortcut)
+4. Right-click and select "Explain Selected Code" from the context menu (or use Alt+Shift+E shortcut)
 5. A dialog should appear with an explanation of the selected code
 
 ## Loading the Plugin Locally for Quick Testing
@@ -194,7 +216,7 @@ After installing the plugin:
 
 1. Open a Java file in IntelliJ IDEA
 2. Select a piece of code
-3. Right-click and select "Explain Selected Code" from the context menu (or use Alt+E shortcut)
+3. Right-click and select "Explain Selected Code" from the context menu (or use Alt+Shift+E shortcut)
 4. Verify that your changes are working as expected
 
 ### Updating After Changes
