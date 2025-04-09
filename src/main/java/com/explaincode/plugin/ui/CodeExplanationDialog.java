@@ -82,10 +82,10 @@ public class CodeExplanationDialog extends DialogWrapper {
         this.isDarkTheme = UIUtil.isUnderDarcula();
 
         // Apply common styles
-        styleSheet.addRule("body { font-family: sans-serif; font-size: 12pt; margin: 10px; }");
+        styleSheet.addRule("body { font-family: sans-serif; font-size: 12pt; margin: 8px; }");
         styleSheet.addRule("h1, h2, h3, h4, h5, h6 { margin: 8px; }");
-        styleSheet.addRule("p { margin: 8px; }");
-        styleSheet.addRule("ul, ol { margin: 4px; }");
+        styleSheet.addRule("p { margin: 4px; }");
+        styleSheet.addRule("ul, ol { margin: 2px; }");
 
         // Apply theme-specific styles
         if (isDarkTheme) {
@@ -153,7 +153,7 @@ public class CodeExplanationDialog extends DialogWrapper {
         tabbedPane.addTab("Selected Code", codePanel);
 
         // Add HTML Source tab if debug mode is enabled
-        if (PluginConfig.getInstance().isDebugMode()) {
+        if (PluginConfig.isDebugMode()) {
             JBPanel<JBPanel<?>> htmlSourcePanel = new JBPanel<>(new BorderLayout());
             JTextArea htmlSourceText = new JTextArea(htmlSource);
             htmlSourceText.setEditable(false);
@@ -271,7 +271,7 @@ public class CodeExplanationDialog extends DialogWrapper {
         explanationPanel.add(explanationScrollPane, BorderLayout.CENTER);
 
         // Update HTML Source tab if debug mode is enabled
-        if (PluginConfig.getInstance().isDebugMode()) {
+        if (PluginConfig.isDebugMode()) {
             // Check if the HTML Source tab exists
             for (int i = 0; i < tabbedPane.getTabCount(); i++) {
                 if ("HTML Source".equals(tabbedPane.getTitleAt(i))) {

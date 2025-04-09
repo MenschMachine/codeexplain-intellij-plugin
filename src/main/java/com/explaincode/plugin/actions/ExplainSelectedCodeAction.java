@@ -1,6 +1,5 @@
 package com.explaincode.plugin.actions;
 
-import com.explaincode.plugin.config.PluginConfig;
 import com.explaincode.plugin.services.CodeAnalyzerService;
 import com.explaincode.plugin.ui.CodeExplanationDialog;
 import com.intellij.openapi.actionSystem.AnAction;
@@ -24,21 +23,6 @@ import java.util.Objects;
  * Action that analyzes and explains the currently selected code in the editor.
  */
 public class ExplainSelectedCodeAction extends AnAction {
-
-    // Static initializer to set debug mode from system property or environment variable
-    static {
-        // Check for system property first
-        String debugProperty = System.getProperty("explaincode.debug");
-        if (debugProperty != null && (debugProperty.trim().equalsIgnoreCase("true") || debugProperty.trim().equals("1"))) {
-            PluginConfig.getInstance().setDebugMode(true);
-        } else {
-            // Check for environment variable if system property is not set
-            String debugEnv = System.getenv("EXPLAINCODE_DEBUG");
-            if (debugEnv != null && (debugEnv.trim().equalsIgnoreCase("true") || debugEnv.trim().equals("1"))) {
-                PluginConfig.getInstance().setDebugMode(true);
-            }
-        }
-    }
 
     @Override
     public void update(@NotNull AnActionEvent e) {

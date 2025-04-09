@@ -5,46 +5,23 @@ package com.explaincode.plugin.config;
  * Contains settings that can be used throughout the plugin.
  */
 public class PluginConfig {
-    // Singleton instance
-    private static PluginConfig instance;
-    
-    // Configuration properties
-    private boolean debugMode = false;
-    
-    /**
-     * Private constructor to enforce singleton pattern
-     */
-    private PluginConfig() {
-        // Initialize with default values
-    }
-    
-    /**
-     * Get the singleton instance of the configuration
-     * 
-     * @return The PluginConfig instance
-     */
-    public static synchronized PluginConfig getInstance() {
-        if (instance == null) {
-            instance = new PluginConfig();
-        }
-        return instance;
-    }
-    
     /**
      * Check if debug mode is enabled
-     * 
+     *
      * @return true if debug mode is enabled, false otherwise
      */
-    public boolean isDebugMode() {
-        return debugMode;
+    public static boolean isDebugMode() {
+        String debugProperty = System.getProperty("explaincode.debug");
+        if (debugProperty != null && (debugProperty.trim().equalsIgnoreCase("true") || debugProperty.trim().equals("1"))) {
+            return true;
+        } else {
+            // Check for environment variable if system property is not set
+            String debugEnv = System.getenv("EXPLAINCODE_DEBUG");
+            if (debugEnv != null && (debugEnv.trim().equalsIgnoreCase("true") || debugEnv.trim().equals("1"))) {
+                return true;
+            }
+        }
+        return false;
     }
-    
-    /**
-     * Set the debug mode
-     * 
-     * @param debugMode true to enable debug mode, false to disable
-     */
-    public void setDebugMode(boolean debugMode) {
-        this.debugMode = debugMode;
-    }
+
 }
