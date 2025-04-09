@@ -9,11 +9,16 @@
     ]]></description>
 
     <depends>com.intellij.modules.platform</depends>
-    <depends optional="true" config-file="java-features.xml">com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
     </extensions>
 
-    <!-- Java-specific actions are defined in java-features.xml -->
+    <actions>
+        <action id="ExplainSelectedCode" class="com.explaincode.plugin.actions.ExplainSelectedCodeAction" 
+                text="Explain Selected Code" description="Analyze and explain the selected code">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt E"/>
+        </action>
+    </actions>
 </idea-plugin>

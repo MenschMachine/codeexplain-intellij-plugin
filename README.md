@@ -37,10 +37,12 @@ This guide provides detailed instructions on how to install, publish, set up you
 
 ### Using the Plugin
 
-1. Open a Java file in IntelliJ IDEA
-2. Select a piece of code (e.g., a method, class, or statement)
+1. Open any code file in your JetBrains IDE
+2. Select a piece of code
 3. Right-click and select "Explain Selected Code" from the context menu (or use Alt+E shortcut)
 4. A dialog will appear with an explanation of the selected code
+
+The plugin works with any programming language supported by your JetBrains IDE.
 
 ## Publishing Guide
 

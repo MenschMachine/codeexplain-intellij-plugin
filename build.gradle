@@ -19,7 +19,6 @@ dependencies {
 intellij {
     version = '2022.2.5'
     type = 'IC' // Target IDE - IntelliJ IDEA Community Edition
-    plugins = ['com.intellij.java']
 }
 
 // Configuration for publishing to JetBrains Marketplace
