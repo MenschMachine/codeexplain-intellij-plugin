@@ -1,7 +1,8 @@
 <idea-plugin>
+    <!-- This is a dynamic plugin that can be installed/uninstalled without restarting the IDE -->
     <id>com.explaincode.plugin</id>
     <name>Explain Selected Code</name>
-    <vendor email="support@explaincode.com" url="https://www.explaincode.com">ExplainCode</vendor>
+    <vendor email="support@codeexplain.xyz" url="https://www.codeexplain.xyz">ExplainCode</vendor>
 
     <description><![CDATA[
     A plugin that displays information about selected code in the editor.
@@ -11,8 +12,7 @@
     <depends>com.intellij.modules.platform</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Register the code analyzer service -->
-        <applicationService serviceImplementation="com.explaincode.plugin.services.CodeAnalyzerService"/>
+        <!-- Services are now registered using @Service annotation -->
     </extensions>
 
     <applicationListeners>

@@ -3,6 +3,7 @@ package com.explaincode.plugin.services;
 import com.explaincode.plugin.models.CodeAnalysisRequest;
 import com.google.gson.Gson;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.components.Service;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +20,8 @@ import java.util.concurrent.*;
  * This service sends the selected code and its context to the API and returns the explanation.
  * Implements Disposable to ensure resources like HttpClient's executor are cleaned up.
  */
-public class CodeAnalyzerService implements Disposable {
+@Service
+public final class CodeAnalyzerService implements Disposable {
 
     private final String API_URL = "https://api.codeexplain.xyz/api/v1/explain";
     private final HttpClient httpClient;

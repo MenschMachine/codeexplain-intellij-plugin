@@ -58,5 +58,20 @@ public class PluginLifecycleListener implements DynamicPluginListener {
     @Override
     public void pluginUnloaded(@NotNull IdeaPluginDescriptor pluginDescriptor, boolean isUpdate) {
         LOG.info("Plugin has been unloaded: " + pluginDescriptor.getName() + ", isUpdate: " + isUpdate);
+
+        // Only clean up our plugin
+        if ("com.explaincode.plugin".equals(pluginDescriptor.getPluginId().getIdString())) {
+            cleanupPlugin();
+        }
+    }
+
+    /**
+     * Clean up plugin resources
+     * This is important for dynamic plugins to prevent memory leaks
+     */
+    private void cleanupPlugin() {
+        // The services annotated with @Service will be automatically disposed
+        // by the platform when the plugin is unloaded
+        LOG.info("Cleaning up plugin resources");
     }
 }

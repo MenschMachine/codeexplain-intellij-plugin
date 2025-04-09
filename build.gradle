@@ -34,7 +34,7 @@ patchPluginXml {
       Initial version of the plugin that displays information about selected code.
     """
     sinceBuild = '222'
-    // TODO what are best practices for this?
+    // Set a reasonable upper bound for compatibility
     untilBuild = '299.*'
     pluginDescription = """
       A plugin that displays information about selected code in the editor.
