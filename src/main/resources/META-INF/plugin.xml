@@ -1,4 +1,4 @@
-<idea-plugin>
+<idea-plugin dynamic-plugin="true" require-restart="false">
     <id>com.explaincode.plugin</id>
     <name>Explain Selected Code</name>
     <vendor email="support@codeexplain.xyz" url="https://www.codeexplain.xyz">ExplainCode</vendor>

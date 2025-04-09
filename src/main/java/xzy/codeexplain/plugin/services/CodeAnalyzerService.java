@@ -2,6 +2,8 @@ package xzy.codeexplain.plugin.services;
 
 import xzy.codeexplain.plugin.models.CodeAnalysisRequest;
 import com.google.gson.Gson;
+import com.intellij.openapi.Disposable;
+import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.psi.PsiElement;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,21 +13,28 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Service for analyzing code elements by making REST calls to an external API.
  * This service sends the selected code and its context to the API and returns the explanation.
+ * Implements AutoCloseable to properly clean up resources when the plugin is unloaded.
  */
-public class CodeAnalyzerService {
+public class CodeAnalyzerService implements AutoCloseable, Disposable {
 
+    private static final Logger LOG = Logger.getInstance(CodeAnalyzerService.class);
     private final String API_URL = "https://api.codeexplain.xyz/api/v1/explain";
     private final HttpClient httpClient;
     private final Gson gson;
+    private final ExecutorService executorService;
 
     public CodeAnalyzerService() {
+        executorService = Executors.newCachedThreadPool();
         httpClient = HttpClient.newBuilder()
                 .version(HttpClient.Version.HTTP_2)
                 .connectTimeout(Duration.ofSeconds(10))
+                .executor(executorService)
                 .build();
         gson = new Gson();
     }
@@ -97,4 +106,29 @@ public class CodeAnalyzerService {
         return null;
     }
 
+    /**
+     * Closes this resource, relinquishing any underlying resources.
+     * This method is called when the plugin is unloaded.
+     */
+    @Override
+    public void close() throws Exception {
+        LOG.info("Closing CodeAnalyzerService and releasing resources");
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdown();
+        }
+    }
+
+    /**
+     * Disposes of resources used by this service.
+     * This method is called when the plugin is unloaded.
+     */
+    @Override
+    public void dispose() {
+        LOG.info("Disposing CodeAnalyzerService");
+        try {
+            close();
+        } catch (Exception e) {
+            LOG.error("Error disposing CodeAnalyzerService", e);
+        }
+    }
 }
