@@ -7,6 +7,9 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.editor.SelectionModel;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiElement;
@@ -66,22 +69,35 @@ public class ExplainSelectedCodeAction extends AnAction {
         CodeAnalyzerService analyzerService = com.intellij.openapi.application.ApplicationManager.getApplication()
                 .getService(CodeAnalyzerService.class);
 
-        // Show dialog with loading spinner first
-        CodeExplanationDialog dialog = new CodeExplanationDialog(project, selectedText);
-        dialog.show();
+        // Show loading indicator in the background and make the API call without blocking the UI
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Analyzing Code", true) {
+            private String explanation;
 
-        // Make the API call asynchronously
-        analyzerService.analyzeCodeAsync(element, selectedText)
-            .thenAccept(explanation -> {
-                // Add file information
-                StringBuilder fullExplanation = new StringBuilder(explanation);
-                fullExplanation.append("\n\nFile: ").append(psiFile.getName());
-                fullExplanation.append("\nSelection Range: ").append(startOffset).append(" - ").append(endOffset);
+            @Override
+            public void run(@NotNull ProgressIndicator indicator) {
+                indicator.setText("Analyzing your code...");
+                indicator.setIndeterminate(true);
 
-                // Update the dialog with the explanation on the UI thread
-                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater(() -> {
-                    dialog.updateExplanation(fullExplanation.toString());
-                });
-            });
+                try {
+                    // Make the API call and wait for the result
+                    explanation = analyzerService.analyzeCodeAsync(element, selectedText).get();
+
+                    // Add file information
+                    StringBuilder fullExplanation = new StringBuilder(explanation);
+                    fullExplanation.append("\n\nFile: ").append(psiFile.getName());
+                    fullExplanation.append("\nSelection Range: ").append(startOffset).append(" - ").append(endOffset);
+                    explanation = fullExplanation.toString();
+                } catch (Exception e) {
+                    explanation = "Error: Failed to get explanation from API. Exception: " + e.getMessage();
+                }
+            }
+
+            @Override
+            public void onSuccess() {
+                // Show dialog with the explanation
+                CodeExplanationDialog dialog = new CodeExplanationDialog(project, explanation, selectedText);
+                dialog.show();
+            }
+        });
     }
 }
