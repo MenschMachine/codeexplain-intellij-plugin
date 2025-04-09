@@ -1,0 +1,19 @@
+<idea-plugin>
+    <id>com.explaincode.plugin</id>
+    <name>Explain Selected Code</name>
+    <vendor email="support@explaincode.com" url="https://www.explaincode.com">ExplainCode</vendor>
+
+    <description><![CDATA[
+    A plugin that displays information about selected code in the editor.
+    Select a piece of code and get insights about what it does.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+    <depends optional="true" config-file="java-features.xml">com.intellij.modules.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <!-- Java-specific actions are defined in java-features.xml -->
+</idea-plugin>

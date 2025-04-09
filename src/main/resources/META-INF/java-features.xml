@@ -1,0 +1,9 @@
+<idea-plugin>
+    <actions>
+        <action id="ExplainSelectedCode" class="com.explaincode.plugin.actions.ExplainSelectedCodeAction" 
+                text="Explain Selected Code" description="Analyze and explain the selected code">
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt E"/>
+        </action>
+    </actions>
+</idea-plugin>

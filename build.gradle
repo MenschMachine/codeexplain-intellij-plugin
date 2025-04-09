@@ -1,0 +1,46 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij' version '1.17.0'
+}
+
+group 'com.explaincode'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+// See https://github.com/JetBrains/gradle-intellij-plugin/
+intellij {
+    version = '2022.2.5'
+    type = 'IC' // Target IDE - IntelliJ IDEA Community Edition
+    plugins = ['com.intellij.java']
+}
+
+// Configuration for publishing to JetBrains Marketplace
+publishPlugin {
+    token = System.getenv("INTELLIJ_MARKETPLACE_TOKEN") // Use environment variable for security
+    channels = ['default']
+}
+
+patchPluginXml {
+    changeNotes = """
+      Initial version of the plugin that displays information about selected code.
+    """
+    sinceBuild = '222'
+    untilBuild = '243.*'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+tasks.withType(JavaCompile) {
+    sourceCompatibility = '11'
+    targetCompatibility = '11'
+}
