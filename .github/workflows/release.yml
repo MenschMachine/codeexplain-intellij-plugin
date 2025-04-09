@@ -26,6 +26,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -74,19 +79,37 @@ jobs:
           sed -i "s/version '.*'/version '${{ steps.calculate_version.outputs.new_version }}'/" build.gradle
           cat build.gradle
 
+          # Commit the version change
+          git add build.gradle
+          git commit -m "Bump version to ${{ steps.calculate_version.outputs.new_version }}"
+          git push
+
       - name: Build plugin
         run: ./gradlew buildPlugin
 
-      - name: Create Release
+      - name: Create Git Tag
+        run: |
+          git tag -a v${{ steps.calculate_version.outputs.new_version }} -m "Release v${{ steps.calculate_version.outputs.new_version }}"
+          git push origin v${{ steps.calculate_version.outputs.new_version }}
+
+      - name: Create GitHub Release
         id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ steps.calculate_version.outputs.new_version }}
-          name: Release v${{ steps.calculate_version.outputs.new_version }}
-          draft: false
-          prerelease: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.prerelease }}
-          files: build/distributions/codeexplain-intellij-plugin-${{ steps.calculate_version.outputs.new_version }}.zip
-          generate_release_notes: true
+        run: |
+          # Find the built plugin ZIP file
+          PLUGIN_ZIP=$(find build/distributions -name "*.zip" | head -n 1)
+          echo "Found plugin ZIP: $PLUGIN_ZIP"
+
+          # Create a release using GitHub CLI
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.prerelease }}" == "true" ]]; then
+            gh release create v${{ steps.calculate_version.outputs.new_version }} "$PLUGIN_ZIP" \
+              --title "Release v${{ steps.calculate_version.outputs.new_version }}" \
+              --notes "Automated release v${{ steps.calculate_version.outputs.new_version }}" \
+              --prerelease
+          else
+            gh release create v${{ steps.calculate_version.outputs.new_version }} "$PLUGIN_ZIP" \
+              --title "Release v${{ steps.calculate_version.outputs.new_version }}" \
+              --notes "Automated release v${{ steps.calculate_version.outputs.new_version }}"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
