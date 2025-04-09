@@ -2,176 +2,132 @@ package com.explaincode.plugin.services;
 
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiNamedElement;
-import com.intellij.psi.PsiReference;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.time.Duration;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 /**
- * Service for analyzing code elements and providing detailed information about them.
- * This service is language-agnostic and works with any PSI element.
+ * Service for analyzing code elements by making REST calls to an external API.
+ * This service sends the selected code and its context to the API and returns the explanation.
  */
 public class CodeAnalyzerService {
 
+    private static final String API_URL = "https://api.codeexplain.xyz/api/v1/explain";
+    private static final HttpClient httpClient = HttpClient.newBuilder()
+            .version(HttpClient.Version.HTTP_2)
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
     /**
      * Analyzes the given PSI element and its context to provide a detailed explanation.
+     * Makes a REST call to an external API to get the explanation.
      *
-     * @param element The PSI element to analyze
+     * @param element      The PSI element to analyze
      * @param selectedText The text that was selected by the user
      * @return A detailed explanation of the code
      */
     public String analyzeCode(@NotNull PsiElement element, @NotNull String selectedText) {
-        StringBuilder explanation = new StringBuilder();
-        explanation.append("Selected Code: ").append(selectedText).append("\n\n");
+        try {
+            // Get surrounding context
+            String context = getSurroundingContext(element);
 
-        // Find the containing element of interest
-        PsiElement contextElement = findContextElement(element);
-        
-        if (contextElement != null) {
-            explanation.append("Context: ").append(getElementType(contextElement)).append("\n\n");
-            
-            // Add generic information about the element
-            analyzeGenericElement(contextElement, explanation);
-        } else {
-            // If we couldn't find a specific context, just provide basic information
-            explanation.append("Element Type: ").append(element.getClass().getSimpleName()).append("\n");
-            explanation.append("Text: ").append(element.getText()).append("\n");
+            // Create JSON payload
+            String jsonPayload = String.format("{\"selectedCode\": %s, \"context\": %s}",
+                    escapeJsonString(selectedText),
+                    escapeJsonString(context));
+
+            // Make the API call
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(API_URL))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                    .timeout(Duration.ofSeconds(30))
+                    .build();
+
+            CompletableFuture<HttpResponse<String>> responseFuture = httpClient.sendAsync(
+                    request, HttpResponse.BodyHandlers.ofString());
+
+            HttpResponse<String> response = responseFuture.get();
+
+            if (response.statusCode() == 200) {
+                return response.body();
+            } else {
+                return "Error: Failed to get explanation from API. Status code: " + response.statusCode() +
+                        "\nResponse: " + response.body();
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            return "Error: Failed to get explanation from API. Exception: " + e.getMessage();
         }
-
-        return explanation.toString();
     }
 
     /**
-     * Analyzes a generic PSI element and adds information to the explanation.
+     * Gets the surrounding context of the selected code.
+     * This extracts a larger portion of code around the selected element.
      */
-    private void analyzeGenericElement(@NotNull PsiElement element, @NotNull StringBuilder explanation) {
-        // Basic element information
-        explanation.append("Element Type: ").append(element.getClass().getSimpleName()).append("\n");
-        explanation.append("Text: ").append(element.getText().length() > 100 ? 
-                element.getText().substring(0, 97) + "..." : element.getText()).append("\n");
-        
-        // File information
+    private String getSurroundingContext(@NotNull PsiElement element) {
         PsiFile containingFile = element.getContainingFile();
         if (containingFile != null) {
-            explanation.append("File: ").append(containingFile.getName()).append("\n");
+            // Get the entire file content as context
+            // In a more sophisticated implementation, you might want to get just
+            // the surrounding function/method/class
+            return containingFile.getText();
         }
-        
-        // Text range information
-        explanation.append("Text Range: ").append(element.getTextRange().getStartOffset())
-                  .append(" - ").append(element.getTextRange().getEndOffset()).append("\n");
-        
-        // Add information about the element's children
-        PsiElement[] children = element.getChildren();
-        if (children.length > 0) {
-            explanation.append("\nContains ").append(children.length).append(" child elements.\n");
-            explanation.append("Child element types: ");
-            for (int i = 0; i < Math.min(5, children.length); i++) {
-                if (i > 0) explanation.append(", ");
-                explanation.append(children[i].getClass().getSimpleName());
-            }
-            if (children.length > 5) {
-                explanation.append(", ...");
-            }
-            explanation.append("\n");
-        }
-        
-        // Add information about the element's parent
-        PsiElement parent = element.getParent();
-        if (parent != null) {
-            explanation.append("\nParent Element Type: ").append(parent.getClass().getSimpleName()).append("\n");
-        }
-        
-        // Add references information if available
-        PsiReference[] references = element.getReferences();
-        if (references.length > 0) {
-            explanation.append("\nReferences: ").append(references.length).append("\n");
-        }
-        
-        // Add navigation information
-        if (element instanceof PsiNamedElement) {
-            PsiNamedElement namedElement = (PsiNamedElement) element;
-            String name = namedElement.getName();
-            if (name != null) {
-                explanation.append("Name: ").append(name).append("\n");
-            }
-        }
+
+        // If we can't get the file, just use the element's text
+        return element.getText();
     }
 
     /**
-     * Finds the most relevant containing element for the given PSI element.
-     * This method is language-agnostic and works with any PSI element.
+     * Escapes a string for use in JSON.
      */
-    @Nullable
-    private PsiElement findContextElement(@NotNull PsiElement element) {
-        // Start with the element itself
-        PsiElement current = element;
-        
-        // If the element is just whitespace or very small, look for a parent
-        if (element.getText().trim().isEmpty() || element.getTextLength() < 3) {
-            current = element.getParent();
+    private String escapeJsonString(String input) {
+        if (input == null) {
+            return "null";
         }
-        
-        // Find a meaningful parent element if the current one is too small
-        while (current != null && current.getTextLength() < 10 && !(current instanceof PsiFile)) {
-            current = current.getParent();
-        }
-        
-        return current;
-    }
 
-    /**
-     * Checks if the element is fully contained within the range of the container.
-     */
-    private boolean isElementWithinRange(@NotNull PsiElement element, @NotNull PsiElement container) {
-        int elementStart = element.getTextRange().getStartOffset();
-        int elementEnd = element.getTextRange().getEndOffset();
-        int containerStart = container.getTextRange().getStartOffset();
-        int containerEnd = container.getTextRange().getEndOffset();
-        
-        return elementStart >= containerStart && elementEnd <= containerEnd;
-    }
-
-    /**
-     * Gets a human-readable description of the element type.
-     * This method is language-agnostic and works with any PSI element.
-     */
-    private String getElementType(@NotNull PsiElement element) {
-        String className = element.getClass().getSimpleName();
-        
-        // Remove common prefixes and suffixes to make the name more readable
-        className = className.replace("Psi", "").replace("Impl", "");
-        
-        // Try to make the name more human-readable
-        if (className.endsWith("Statement")) {
-            return "Statement";
-        } else if (className.endsWith("Expression")) {
-            return "Expression";
-        } else if (className.endsWith("Declaration")) {
-            return "Declaration";
-        } else if (className.endsWith("Element")) {
-            return className.replace("Element", "");
-        } else if (className.endsWith("Reference")) {
-            return "Reference";
-        } else if (className.endsWith("Literal")) {
-            return "Literal";
-        } else if (className.endsWith("File")) {
-            return "File";
-        } else if (className.endsWith("Comment")) {
-            return "Comment";
-        } else if (className.endsWith("Definition")) {
-            return "Definition";
-        } else if (className.endsWith("Function")) {
-            return "Function";
-        } else if (className.endsWith("Method")) {
-            return "Method";
-        } else if (className.endsWith("Class")) {
-            return "Class";
-        } else if (className.endsWith("Parameter")) {
-            return "Parameter";
-        } else if (className.endsWith("Variable")) {
-            return "Variable";
-        } else {
-            return className;
+        StringBuilder sb = new StringBuilder("\"");
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            switch (c) {
+                case '\\':
+                case '"':
+                    sb.append('\\').append(c);
+                    break;
+                case '\b':
+                    sb.append("\\b");
+                    break;
+                case '\f':
+                    sb.append("\\f");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                default:
+                    if (c < ' ') {
+                        String hex = Integer.toHexString(c);
+                        sb.append("\\u");
+                        for (int j = 0; j < 4 - hex.length(); j++) {
+                            sb.append('0');
+                        }
+                        sb.append(hex);
+                    } else {
+                        sb.append(c);
+                    }
+            }
         }
+        sb.append('"');
+        return sb.toString();
     }
 }
