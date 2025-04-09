@@ -27,12 +27,12 @@ public class ExplainSelectedCodeAction extends AnAction {
     static {
         // Check for system property first
         String debugProperty = System.getProperty("explaincode.debug");
-        if (debugProperty != null && (debugProperty.equalsIgnoreCase("true") || debugProperty.equals("1"))) {
+        if (debugProperty != null && (debugProperty.trim().equalsIgnoreCase("true") || debugProperty.trim().equals("1"))) {
             PluginConfig.getInstance().setDebugMode(true);
         } else {
             // Check for environment variable if system property is not set
             String debugEnv = System.getenv("EXPLAINCODE_DEBUG");
-            if (debugEnv != null && (debugEnv.equalsIgnoreCase("true") || debugEnv.equals("1"))) {
+            if (debugEnv != null && (debugEnv.trim().equalsIgnoreCase("true") || debugEnv.trim().equals("1"))) {
                 PluginConfig.getInstance().setDebugMode(true);
             }
         }
