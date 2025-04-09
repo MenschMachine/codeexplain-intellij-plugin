@@ -2,6 +2,7 @@ package com.explaincode.plugin.services;
 
 import com.explaincode.plugin.models.CodeAnalysisRequest;
 import com.google.gson.Gson;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.intellij.icons.AllIcons.RunConfigurations.Application;
 
 /**
  * Service for analyzing code elements by making REST calls to an external API.
@@ -42,9 +45,7 @@ public class CodeAnalyzerService {
      * @param selectedText The text that was selected by the user
      * @return A CompletableFuture that will complete with the explanation
      */
-    public CompletableFuture<String> analyzeCodeAsync(@NotNull PsiElement element, @NotNull String selectedText) {
-        // Get surrounding context
-        String context = getSurroundingContext(element);
+    public CompletableFuture<String> analyzeCodeAsync(@NotNull PsiElement element, @NotNull String selectedText, @NotNull String context) {
 
         // Create request object
         CodeAnalysisRequest requestObj = new CodeAnalysisRequest(selectedText, context, "markdown");
@@ -74,42 +75,6 @@ public class CodeAnalyzerService {
                     }
                 })
                 .exceptionally(e -> "Error: Failed to get explanation from API. Exception: " + e.getMessage());
-    }
-
-    /**
-     * Analyzes the given PSI element and its context to provide a detailed explanation.
-     * Makes a REST call to an external API to get the explanation.
-     * This is a blocking version of the method that waits for the result.
-     *
-     * @param element      The PSI element to analyze
-     * @param selectedText The text that was selected by the user
-     * @return A detailed explanation of the code
-     * @deprecated Use analyzeCodeAsync instead for better UI responsiveness
-     */
-    @Deprecated
-    public String analyzeCode(@NotNull PsiElement element, @NotNull String selectedText) {
-        try {
-            return analyzeCodeAsync(element, selectedText).get();
-        } catch (InterruptedException | ExecutionException e) {
-            return "Error: Failed to get explanation from API. Exception: " + e.getMessage();
-        }
-    }
-
-    /**
-     * Gets the surrounding context of the selected code.
-     * This extracts a larger portion of code around the selected element.
-     */
-    private String getSurroundingContext(@NotNull PsiElement element) {
-        PsiFile containingFile = element.getContainingFile();
-        if (containingFile != null) {
-            // Get the entire file content as context
-            // In a more sophisticated implementation, you might want to get just
-            // the surrounding function/method/class
-            return containingFile.getText();
-        }
-
-        // If we can't get the file, just use the element's text
-        return element.getText();
     }
 
     /**

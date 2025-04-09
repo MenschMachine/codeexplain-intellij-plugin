@@ -18,6 +18,8 @@ import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiUtilBase;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 /**
  * Action that analyzes and explains the currently selected code in the editor.
  */
@@ -66,7 +68,6 @@ public class ExplainSelectedCodeAction extends AnAction {
 
         String selectedText = selectionModel.getSelectedText();
         int startOffset = selectionModel.getSelectionStart();
-        int endOffset = selectionModel.getSelectionEnd();
 
         // Find the PSI element at the selection
         PsiElement element = psiFile.findElementAt(startOffset);
@@ -76,11 +77,13 @@ public class ExplainSelectedCodeAction extends AnAction {
         }
 
         // Analyze the selected code and display information
-        analyzeAndExplainCode(project, psiFile, element, selectedText, startOffset, endOffset);
+        analyzeAndExplainCode(project, element, selectedText);
     }
 
-    private void analyzeAndExplainCode(Project project, PsiFile psiFile, PsiElement element,
-                                       String selectedText, int startOffset, int endOffset) {
+    private void analyzeAndExplainCode(Project project, PsiElement element,
+                                       String selectedText) {
+
+        String context = getSurroundingContext(element);
         // Get the CodeAnalyzerService from the application service registry
         CodeAnalyzerService analyzerService = com.intellij.openapi.application.ApplicationManager.getApplication()
                 .getService(CodeAnalyzerService.class);
@@ -96,7 +99,7 @@ public class ExplainSelectedCodeAction extends AnAction {
 
                 try {
                     // Make the API call and wait for the result
-                    explanation = analyzerService.analyzeCodeAsync(element, selectedText).get();
+                    explanation = analyzerService.analyzeCodeAsync(element, selectedText, context).get();
                 } catch (Exception e) {
                     explanation = "Error: Failed to get explanation from API. Exception: " + e.getMessage();
                 }
@@ -109,5 +112,20 @@ public class ExplainSelectedCodeAction extends AnAction {
                 dialog.show();
             }
         });
+    }
+
+
+    /**
+     * Gets the surrounding context of the selected code.
+     * This extracts a larger portion of code around the selected element.
+     */
+    private String getSurroundingContext(@NotNull PsiElement element) {
+        PsiFile containingFile = element.getContainingFile();
+        // Get the entire file content as context
+        // In a more sophisticated implementation, you might want to get just
+        // the surrounding function/method/class
+        return Objects.requireNonNullElse(containingFile, element).getText();
+
+        // If we can't get the file, just use the element's text
     }
 }
