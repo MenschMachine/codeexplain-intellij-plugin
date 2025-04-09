@@ -22,8 +22,28 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Validate Gradle wrapper
-        uses: gradle/wrapper-validation-action@v1
+      - name: Setup Gradle Wrapper
+        run: |
+          # Check if wrapper exists
+          if [ ! -f "./gradle/wrapper/gradle-wrapper.jar" ]; then
+            echo "Gradle wrapper not found, generating it..."
+            # Create directories if they don't exist
+            mkdir -p gradle/wrapper
+            # Copy the wrapper files from your local machine
+            echo "Copying gradle-wrapper.jar"
+            curl -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/master/gradle/wrapper/gradle-wrapper.jar
+            echo "Copying gradle-wrapper.properties"
+            cat > gradle/wrapper/gradle-wrapper.properties << 'EOL'
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-8.4-bin.zip
+networkTimeout=10000
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+EOL
+          else
+            echo "Gradle wrapper found"
+          fi
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew

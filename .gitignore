@@ -1,6 +1,12 @@
 .idea
 .gradle
 build
-gradle
+
+# Keep gradle wrapper
+!gradle/
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
 .aider*
 .vscode
