@@ -38,42 +38,21 @@ jobs:
         with:
           gradle-version: 8.5
 
-      - name: Make scripts executable
-        run: |
-          chmod +x ./gradlew
-          chmod +x get-current-version.sh
-          chmod +x bump-version.sh
-
-          # Debug: Show current version
-          echo "Current version information:"
-          ./get-current-version.sh
-
       - name: Calculate next version
         id: calculate_version
         run: |
-          # Use the bump-version script to calculate the next version (patch increment)
-          # The last line of the script output contains just the version number
-          SCRIPT_OUTPUT=$(./bump-version.sh build.gradle patch)
-          # Extract the last line which contains only the version number
-          NEW_VERSION=$(echo "$SCRIPT_OUTPUT" | tail -n 1)
-
+          CURRENT_VERSION=$(./get-current-version.sh 2> /dev/null)
           # Set the output variable for use in later steps
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "New version will be: $NEW_VERSION"
-
-      - name: Commit and push updated build.gradle
-        run: |
-          git add build.gradle
-          git commit -m "Bump version to ${{ steps.calculate_version.outputs.new_version }}"
-          git push origin main
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version is: $CURRENT_VERSION"
 
       - name: Build plugin
         run: ./gradlew buildPlugin
 
       - name: Create Git Tag
         run: |
-          git tag -a v${{ steps.calculate_version.outputs.new_version }} -m "Release v${{ steps.calculate_version.outputs.new_version }}"
-          git push origin v${{ steps.calculate_version.outputs.new_version }}
+          git tag -a v${{ steps.calculate_version.outputs.current_version }} -m "Release v${{ steps.calculate_version.outputs.current_version }}"
+          git push origin v${{ steps.calculate_version.outputs.current_version }}
 
       - name: List Distribution Files
         run: |
@@ -92,9 +71,9 @@ jobs:
           echo "Found plugin ZIP: $PLUGIN_ZIP"
 
           # Create a release using GitHub CLI
-          gh release create v${{ steps.calculate_version.outputs.new_version }} "$PLUGIN_ZIP" \
-            --title "Release v${{ steps.calculate_version.outputs.new_version }}" \
-            --notes "Automated release v${{ steps.calculate_version.outputs.new_version }}"
+          gh release create v${{ steps.calculate_version.outputs.current_version }} "$PLUGIN_ZIP" \
+            --title "Release v${{ steps.calculate_version.outputs.current_version }}" \
+            --notes "Automated release v${{ steps.calculate_version.outputs.current_version }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
