@@ -13,13 +13,15 @@ import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.openapi.util.IconLoader;
+import com.intellij.openapi.wm.ToolWindow;
+import com.intellij.openapi.wm.ToolWindowManager;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.util.PsiUtilBase;
 import com.intellij.ui.components.JBLabel;
 import org.jetbrains.annotations.NotNull;
 import xzy.codeexplain.plugin.services.CodeAnalyzerService;
-import xzy.codeexplain.plugin.ui.CodeExplanationDialog;
+import xzy.codeexplain.plugin.services.CodeExplanationToolWindowService;
 
 import javax.swing.*;
 import java.awt.*;
@@ -97,6 +99,21 @@ public class ExplainSelectedCodeAction extends AnAction {
                 indicator.setText("Analyzing your code...");
                 indicator.setIndeterminate(true);
 
+                // Show loading indicator in the tool window
+                ApplicationManager.getApplication().invokeLater(() -> {
+                    // Get the tool window service
+                    CodeExplanationToolWindowService toolWindowService = project.getService(CodeExplanationToolWindowService.class);
+
+                    // Show loading indicator
+                    toolWindowService.showLoading();
+
+                    // Activate the tool window
+                    ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Code Explanation");
+                    if (toolWindow != null) {
+                        toolWindow.show();
+                    }
+                });
+
                 try {
                     explanation = analyzerService.analyzeCodeAsync(element, selectedText, context).get();
                 } catch (Exception e) {
@@ -109,8 +126,17 @@ public class ExplainSelectedCodeAction extends AnAction {
 
             @Override
             public void onSuccess() {
-                CodeExplanationDialog dialog = new CodeExplanationDialog(project, explanation, selectedText);
-                dialog.show();
+                // Get the tool window service
+                CodeExplanationToolWindowService toolWindowService = project.getService(CodeExplanationToolWindowService.class);
+
+                // Update the tool window content
+                toolWindowService.updateContent(explanation, selectedText);
+
+                // Activate the tool window
+                ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Code Explanation");
+                if (toolWindow != null) {
+                    toolWindow.show();
+                }
             }
         });
     }

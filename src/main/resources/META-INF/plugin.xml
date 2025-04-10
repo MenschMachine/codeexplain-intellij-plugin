@@ -13,6 +13,16 @@
     <extensions defaultExtensionNs="com.intellij">
         <!-- Register the code analyzer service as light service -->
         <applicationService serviceImplementation="xzy.codeexplain.plugin.services.CodeAnalyzerService"/>
+
+        <!-- Register the tool window service -->
+        <projectService serviceImplementation="xzy.codeexplain.plugin.services.CodeExplanationToolWindowService"/>
+
+        <!-- Register the code explanation tool window -->
+        <toolWindow id="Code Explanation" 
+                    secondary="true"
+                    icon="/icons/explain_code.svg"
+                    anchor="right"
+                    factoryClass="xzy.codeexplain.plugin.ui.CodeExplanationToolWindowFactory"/>
     </extensions>
 
     <applicationListeners>
