@@ -1,16 +1,47 @@
 #!/bin/bash
 # Script to bump the version number in build.gradle
-# Usage: ./bump-version.sh [path/to/build.gradle] [major|minor|patch] [--snapshot]
+# Usage: ./bump-version.sh [path/to/build.gradle] [major|minor|patch] [--snapshot] [--help]
 
-# Set the build.gradle path (default to build.gradle in current directory)
-BUILD_GRADLE=${1:-"build.gradle"}
-# Set the version part to bump (default to patch)
-BUMP_TYPE=${2:-"patch"}
-# Check if snapshot flag is set
+# Parse arguments
+BUILD_GRADLE="build.gradle"
+BUMP_TYPE="patch"
 SNAPSHOT=false
-if [[ "$3" == "--snapshot" ]]; then
-  SNAPSHOT=true
-fi
+
+# Display help information if --help is present anywhere in the arguments
+for arg in "$@"; do
+  if [[ "$arg" == "--help" ]]; then
+    echo "Usage: ./bump-version.sh [path/to/build.gradle] [major|minor|patch] [--snapshot] [--help]"
+    echo ""
+    echo "Options:"
+    echo "  path/to/build.gradle  Path to the build.gradle file (default: ./build.gradle)"
+    echo "  major|minor|patch     Version component to bump (default: patch)"
+    echo "  --snapshot            Add -SNAPSHOT suffix to the new version"
+    echo "  --help                Display this help message"
+    echo ""
+    echo "Examples:"
+    echo "  ./bump-version.sh                     # Bump patch version in ./build.gradle"
+    echo "  ./bump-version.sh minor              # Bump minor version in ./build.gradle"
+    echo "  ./bump-version.sh build.gradle major # Bump major version in specified file"
+    echo "  ./bump-version.sh --snapshot         # Bump patch version and add -SNAPSHOT suffix"
+    exit 0
+  fi
+done
+
+# Process arguments
+for arg in "$@"; do
+  if [[ "$arg" == "--snapshot" ]]; then
+    SNAPSHOT=true
+  elif [[ "$arg" == "major" || "$arg" == "minor" || "$arg" == "patch" ]]; then
+    BUMP_TYPE="$arg"
+  elif [[ "$arg" != "--help" && ! "$arg" =~ ^-- ]]; then
+    # If it's not a flag and not a bump type, assume it's the build.gradle path
+    if [[ -f "$arg" ]]; then
+      BUILD_GRADLE="$arg"
+    else
+      echo "Warning: '$arg' is not a valid file. Using default build.gradle."
+    fi
+  fi
+done
 
 if [ ! -f "$BUILD_GRADLE" ]; then
   echo "Error: $BUILD_GRADLE not found" >&2
