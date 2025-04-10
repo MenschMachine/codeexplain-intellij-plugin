@@ -52,7 +52,10 @@ jobs:
         id: calculate_version
         run: |
           # Use the bump-version script to calculate the next version (patch increment)
-          NEW_VERSION=$(./bump-version.sh build.gradle patch)
+          # The last line of the script output contains just the version number
+          SCRIPT_OUTPUT=$(./bump-version.sh build.gradle patch)
+          # Extract the last line which contains only the version number
+          NEW_VERSION=$(echo "$SCRIPT_OUTPUT" | tail -n 1)
 
           # Set the output variable for use in later steps
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
