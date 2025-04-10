@@ -359,9 +359,38 @@ public class CodeExplanationToolWindow {
     }
 
     /**
-     * Shows the loading panel in the explanation tab.
+     * Shows the loading panel in the explanation tab with the initial message.
      */
     public void showLoading() {
+        explanationPanel.removeAll();
+        explanationPanel.add(loadingPanel, BorderLayout.CENTER);
+        explanationPanel.revalidate();
+        explanationPanel.repaint();
+    }
+
+    /**
+     * Shows the loading panel with an analyzing message when processing code.
+     */
+    public void showAnalyzing() {
+        // First update the message in the loading panel
+        for (Component c : loadingPanel.getComponents()) {
+            if (c instanceof JPanel) {
+                JPanel centerPanel = (JPanel) c;
+                for (Component innerC : centerPanel.getComponents()) {
+                    if (innerC instanceof JPanel) {
+                        JPanel messagePanel = (JPanel) innerC;
+                        // Check if this is the message panel (second panel)
+                        if (messagePanel.getComponents().length > 0 && messagePanel.getComponents()[0] instanceof JLabel) {
+                            JLabel messageLabel = (JLabel) messagePanel.getComponents()[0];
+                            messageLabel.setText("Analyzing your code. This may take a few seconds.");
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        // Then show the loading panel
         explanationPanel.removeAll();
         explanationPanel.add(loadingPanel, BorderLayout.CENTER);
         explanationPanel.revalidate();

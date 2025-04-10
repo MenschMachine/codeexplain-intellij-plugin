@@ -60,11 +60,20 @@ public final class CodeExplanationToolWindowService {
     }
 
     /**
-     * Shows the loading indicator in the tool window.
+     * Shows the loading indicator in the tool window with the initial message.
      */
     public void showLoading() {
         if (toolWindow != null) {
             toolWindow.showLoading();
+        }
+    }
+
+    /**
+     * Shows the loading indicator in the tool window with an analyzing message.
+     */
+    public void showAnalyzing() {
+        if (toolWindow != null) {
+            toolWindow.showAnalyzing();
         }
     }
 }

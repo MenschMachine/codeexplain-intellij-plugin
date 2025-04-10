@@ -104,8 +104,8 @@ public class ExplainSelectedCodeAction extends AnAction {
                     // Get the tool window service
                     CodeExplanationToolWindowService toolWindowService = project.getService(CodeExplanationToolWindowService.class);
 
-                    // Show loading indicator
-                    toolWindowService.showLoading();
+                    // Show analyzing indicator
+                    toolWindowService.showAnalyzing();
 
                     // Activate the tool window
                     ToolWindow toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Code Explanation");
