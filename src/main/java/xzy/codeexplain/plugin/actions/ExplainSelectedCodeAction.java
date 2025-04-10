@@ -42,8 +42,11 @@ public class ExplainSelectedCodeAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        final Editor editor = e.getRequiredData(CommonDataKeys.EDITOR);
-        final Project project = e.getRequiredData(CommonDataKeys.PROJECT);
+        final Editor editor = e.getData(CommonDataKeys.EDITOR);
+        final Project project = e.getData(CommonDataKeys.PROJECT);
+        if (editor == null || project == null) {
+            return;
+        }
         final PsiFile psiFile = PsiUtilBase.getPsiFileInEditor(editor, project);
 
         if (psiFile == null) {
