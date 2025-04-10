@@ -1,6 +1,6 @@
-# ExplainCode Plugin
+# CodeExplain Plugin
 
-This guide provides detailed instructions on how to install, publish, set up your development environment, build, run, test, and debug the ExplainCode plugin.
+This guide provides detailed instructions on how to install, publish, set up your development environment, build, run, test, and debug the CodeExplain plugin.
 
 ## Table of Contents
 - [Installation Guide](#installation-guide)
@@ -54,7 +54,7 @@ Debug mode can be enabled in one of two ways:
 
 1. **System Property**:
    ```
-   -Dexplaincode.debug=true
+   -Dcodeexplain.debug=true
    ```
    Add this to your IDE's VM options.
 

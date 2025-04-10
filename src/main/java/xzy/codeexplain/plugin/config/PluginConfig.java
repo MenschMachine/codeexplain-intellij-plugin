@@ -11,7 +11,7 @@ public class PluginConfig {
      * @return true if debug mode is enabled, false otherwise
      */
     public static boolean isDebugMode() {
-        String debugProperty = System.getProperty("explaincode.debug");
+        String debugProperty = System.getProperty("codeexplain.debug");
         if (debugProperty != null && (debugProperty.trim().equalsIgnoreCase("true") || debugProperty.trim().equals("1"))) {
             return true;
         } else {

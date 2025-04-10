@@ -1,6 +1,6 @@
 # Release Process
 
-This document outlines the process for creating new releases of the ExplainCode IntelliJ plugin.
+This document outlines the process for creating new releases of the CodeExplain IntelliJ plugin.
 
 ## Automated Release Process
 
