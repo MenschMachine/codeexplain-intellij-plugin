@@ -50,10 +50,7 @@ public class CodeExplanationToolWindow {
     private void createUI() {
         mainPanel = new JPanel(new BorderLayout());
 
-        // Create a tabbed pane for different views
-        tabbedPane = new JTabbedPane();
-
-        // Tab for the explanation
+        // Create explanation panel
         explanationPanel = new JBPanel<>(new BorderLayout());
 
         // Create loading panel with spinner
@@ -103,33 +100,37 @@ public class CodeExplanationToolWindow {
         // Initially show the loading panel instead of the explanation text
         explanationPanel.add(loadingPanel, BorderLayout.CENTER);
 
-        tabbedPane.addTab("Explanation", explanationPanel);
-
-        // Tab for the selected code (initially empty)
-        JBPanel<JBPanel<?>> codePanel = new JBPanel<>(new BorderLayout());
-        JTextArea codeText = new JTextArea(selectedCode);
-        codeText.setEditable(false);
-        codeText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-
-        // Apply theme-specific styling to the code text area
-        if (isDarkTheme) {
-            // Dark theme colors
-            codeText.setBackground(new Color(0x2d2d2d));
-            codeText.setForeground(new Color(0xf8f8f2));
-            codeText.setCaretColor(new Color(0xf8f8f2));
-        } else {
-            // Light theme colors
-            codeText.setBackground(new Color(0xf5f5f5));
-            codeText.setForeground(new Color(0x000000));
-            codeText.setCaretColor(new Color(0x000000));
-        }
-
-        JBScrollPane codeScrollPane = new JBScrollPane(codeText);
-        codePanel.add(codeScrollPane, BorderLayout.CENTER);
-        tabbedPane.addTab("Selected Code", codePanel);
-
-        // Add HTML Source tab if debug mode is enabled
         if (PluginConfig.isDebugMode()) {
+            // In debug mode, use tabbed pane
+            tabbedPane = new JTabbedPane();
+
+            // Add explanation tab
+            tabbedPane.addTab("Explanation", explanationPanel);
+
+            // Tab for the selected code (initially empty)
+            JBPanel<JBPanel<?>> codePanel = new JBPanel<>(new BorderLayout());
+            JTextArea codeText = new JTextArea(selectedCode);
+            codeText.setEditable(false);
+            codeText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+
+            // Apply theme-specific styling to the code text area
+            if (isDarkTheme) {
+                // Dark theme colors
+                codeText.setBackground(new Color(0x2d2d2d));
+                codeText.setForeground(new Color(0xf8f8f2));
+                codeText.setCaretColor(new Color(0xf8f8f2));
+            } else {
+                // Light theme colors
+                codeText.setBackground(new Color(0xf5f5f5));
+                codeText.setForeground(new Color(0x000000));
+                codeText.setCaretColor(new Color(0x000000));
+            }
+
+            JBScrollPane codeScrollPane = new JBScrollPane(codeText);
+            codePanel.add(codeScrollPane, BorderLayout.CENTER);
+            tabbedPane.addTab("Selected Code", codePanel);
+
+            // HTML Source tab
             JBPanel<JBPanel<?>> htmlSourcePanel = new JBPanel<>(new BorderLayout());
             JTextArea htmlSourceText = new JTextArea(htmlSource);
             htmlSourceText.setEditable(false);
@@ -174,9 +175,13 @@ public class CodeExplanationToolWindow {
             JBScrollPane markdownScrollPane = new JBScrollPane(markdownText);
             markdownPanel.add(markdownScrollPane, BorderLayout.CENTER);
             tabbedPane.addTab("Original Markdown", markdownPanel);
-        }
 
-        mainPanel.add(tabbedPane, BorderLayout.CENTER);
+            // Add tabbed pane to main panel
+            mainPanel.add(tabbedPane, BorderLayout.CENTER);
+        } else {
+            // In normal mode, just show the explanation panel directly
+            mainPanel.add(explanationPanel, BorderLayout.CENTER);
+        }
     }
 
     /**
@@ -246,11 +251,9 @@ public class CodeExplanationToolWindow {
         JBScrollPane explanationScrollPane = new JBScrollPane(explanationText);
         explanationPanel.add(explanationScrollPane, BorderLayout.CENTER);
 
-        // Update the selected code tab
-        updateSelectedCodeTab(newSelectedCode);
-
-        // Update HTML Source tab if debug mode is enabled
-        if (PluginConfig.isDebugMode()) {
+        // Update Selected Code tab and debug tabs if debug mode is enabled
+        if (PluginConfig.isDebugMode() && tabbedPane != null) {
+            updateSelectedCodeTab(newSelectedCode);
             updateDebugTabs();
         }
 
@@ -263,6 +266,9 @@ public class CodeExplanationToolWindow {
      * Updates the selected code tab with new code.
      */
     private void updateSelectedCodeTab(String newCode) {
+        // Make sure tabbedPane is not null (it will be null in non-debug mode)
+        if (tabbedPane == null) return;
+
         // Find the Selected Code tab
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
             if ("Selected Code".equals(tabbedPane.getTitleAt(i))) {
@@ -291,6 +297,9 @@ public class CodeExplanationToolWindow {
      * Updates the debug tabs (HTML Source and Original Markdown) if they exist.
      */
     private void updateDebugTabs() {
+        // Make sure tabbedPane is not null (it will be null in non-debug mode)
+        if (tabbedPane == null) return;
+
         // Update HTML Source tab
         for (int i = 0; i < tabbedPane.getTabCount(); i++) {
             if ("HTML Source".equals(tabbedPane.getTitleAt(i))) {
