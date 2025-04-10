@@ -4,11 +4,6 @@ on:
   push:
     branches: [ main ]
   workflow_dispatch:
-    inputs:
-      prerelease:
-        description: 'Is this a pre-release?'
-        type: boolean
-        default: false
 
 # Permissions needed for creating releases
 permissions:
@@ -48,7 +43,7 @@ jobs:
           chmod +x ./gradlew
           chmod +x get-current-version.sh
           chmod +x bump-version.sh
-          
+
           # Debug: Show current version
           echo "Current version information:"
           ./get-current-version.sh
@@ -56,15 +51,9 @@ jobs:
       - name: Calculate next version
         id: calculate_version
         run: |
-          # Determine if this is a prerelease
-          SNAPSHOT_FLAG=""
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.prerelease }}" == "true" ]]; then
-            SNAPSHOT_FLAG="--snapshot"
-          fi
-          
           # Use the bump-version script to calculate the next version (patch increment)
-          NEW_VERSION=$(./bump-version.sh build.gradle patch $SNAPSHOT_FLAG)
-          
+          NEW_VERSION=$(./bump-version.sh build.gradle patch)
+
           # Set the output variable for use in later steps
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New version will be: $NEW_VERSION"
@@ -94,21 +83,13 @@ jobs:
           echo "Found plugin ZIP: $PLUGIN_ZIP"
 
           # Create a release using GitHub CLI
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ github.event.inputs.prerelease }}" == "true" ]]; then
-            gh release create v${{ steps.calculate_version.outputs.new_version }} "$PLUGIN_ZIP" \
-              --title "Release v${{ steps.calculate_version.outputs.new_version }}" \
-              --notes "Automated release v${{ steps.calculate_version.outputs.new_version }}" \
-              --prerelease
-          else
-            gh release create v${{ steps.calculate_version.outputs.new_version }} "$PLUGIN_ZIP" \
-              --title "Release v${{ steps.calculate_version.outputs.new_version }}" \
-              --notes "Automated release v${{ steps.calculate_version.outputs.new_version }}"
-          fi
+          gh release create v${{ steps.calculate_version.outputs.new_version }} "$PLUGIN_ZIP" \
+            --title "Release v${{ steps.calculate_version.outputs.new_version }}" \
+            --notes "Automated release v${{ steps.calculate_version.outputs.new_version }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Plugin to JetBrains Marketplace
-        if: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.prerelease) }}
         run: |
           if [ -n "${{ secrets.INTELLIJ_MARKETPLACE_TOKEN }}" ]; then
             ./gradlew publishPlugin
