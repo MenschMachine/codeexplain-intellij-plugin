@@ -39,7 +39,8 @@ patchPluginXml {
     untilBuild = '251.*'
     pluginDescription = """
       A plugin that displays information about selected code in the editor.
-      Select a piece of code and get insights about what it does.
+      Select a piece of code and get insights about what it does simply by pressing 
+      Alt+Shift+E or Right-click and select "Explain Selected Code" from the context menu.
     """
 }
 
