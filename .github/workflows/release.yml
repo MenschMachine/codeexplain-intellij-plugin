@@ -61,6 +61,12 @@ jobs:
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "New version will be: $NEW_VERSION"
 
+      - name: Commit and push updated build.gradle
+        run: |
+          git add build.gradle
+          git commit -m "Bump version to ${{ steps.calculate_version.outputs.new_version }}"
+          git push origin main
+
       - name: Build plugin
         run: ./gradlew buildPlugin
 
