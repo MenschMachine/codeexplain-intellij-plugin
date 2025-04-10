@@ -148,5 +148,8 @@ fi
 
 echo "Updated $BUILD_GRADLE with new version: $NEW_VERSION"
 
+# Commit the version change
+git commit -m "build: Bump version to $NEW_VERSION" "$BUILD_GRADLE"
+
 # Output the new version (for use in scripts)
 echo "$NEW_VERSION"
