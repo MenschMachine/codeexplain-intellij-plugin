@@ -1,5 +1,6 @@
 package xzy.codeexplain.plugin.ui;
 
+import com.intellij.ui.JBColor;
 import xzy.codeexplain.plugin.config.PluginConfig;
 import com.intellij.openapi.project.Project;
 import com.intellij.ui.components.JBPanel;
@@ -57,7 +58,7 @@ public class CodeExplanationToolWindow {
         loadingPanel = createLoadingPanel();
 
         // Check if the IDE is using a dark theme
-        this.isDarkTheme = UIUtil.isUnderDarcula();
+        this.isDarkTheme = !JBColor.isBright();
 
         // Create explanation editor pane with HTML support
         explanationText = new JEditorPane();
@@ -234,7 +235,7 @@ public class CodeExplanationToolWindow {
     /**
      * Updates the tool window with the explanation received from the API.
      *
-     * @param newExplanation The explanation text to display
+     * @param newExplanation  The explanation text to display
      * @param newSelectedCode The selected code to display
      */
     public void updateContent(String newExplanation, String newSelectedCode) {
