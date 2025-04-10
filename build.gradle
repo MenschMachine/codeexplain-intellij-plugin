@@ -1,6 +1,7 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.intellij' version '0.0.2'
+    id 'org.jetbrains.intellij' version '1.17.1'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.22' apply false
 }
 
 group 'xyz.codeexplain'
@@ -49,4 +50,8 @@ test {
 tasks.withType(JavaCompile) {
     sourceCompatibility = '17'
     targetCompatibility = '17'
+}
+
+wrapper {
+    gradleVersion = '8.5'
 }
