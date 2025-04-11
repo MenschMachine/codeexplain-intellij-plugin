@@ -32,6 +32,7 @@ publishPlugin {
 patchPluginXml {
     changeNotes = """
       Changes since v0.0.8:
+- fix: Replace deprecated SDK methods (f2df6aa)
 - feat: Add Mozilla Public License and update IntelliJ plugin compatibility range (3b60355)
     """
     // More specific version range
