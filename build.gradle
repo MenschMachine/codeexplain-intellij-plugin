@@ -31,8 +31,12 @@ publishPlugin {
 
 patchPluginXml {
     changeNotes = """
-      Initial version of the plugin that displays information about selected code.
-      Supports dynamic installation/uninstallation without IDE restart.
+      Changes since v0.1.0:
+- docs: Update plugin description with keyboard shortcut and context menu option (e7299fb)
+- refactor: Improve null checks and theme detection in code explanation plugin (6864180)
+- build: Bump version to 0.1.1 (b3df112)
+- Merge branch 'main' into dev (aa58075)
+- build: Bump version to 0.0.10 (b971718)
     """
     // More specific version range
     sinceBuild = '231'
