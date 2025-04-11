@@ -31,12 +31,8 @@ publishPlugin {
 
 patchPluginXml {
     changeNotes = """
-      Changes since v0.1.0:
-- docs: Update plugin description with keyboard shortcut and context menu option (e7299fb)
-- refactor: Improve null checks and theme detection in code explanation plugin (6864180)
-- build: Bump version to 0.1.1 (b3df112)
-- Merge branch 'main' into dev (aa58075)
-- build: Bump version to 0.0.10 (b971718)
+      Changes since v0.0.8:
+- feat: Add Mozilla Public License and update IntelliJ plugin compatibility range (3b60355)
     """
     // More specific version range
     sinceBuild = '231'
