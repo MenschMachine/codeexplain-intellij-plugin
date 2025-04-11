@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'xyz.codeexplain'
-version '0.1.1'
+version '0.1.2'
 
 repositories {
     mavenCentral()
@@ -31,15 +31,17 @@ publishPlugin {
 
 patchPluginXml {
     changeNotes = """
-      Initial version of the plugin that displays information about selected code.
-      Supports dynamic installation/uninstallation without IDE restart.
+      Changes since v0.0.8:
+- fix: Replace deprecated SDK methods (f2df6aa)
+- feat: Add Mozilla Public License and update IntelliJ plugin compatibility range (3b60355)
     """
     // More specific version range
     sinceBuild = '231'
     untilBuild = '251.*'
     pluginDescription = """
       A plugin that displays information about selected code in the editor.
-      Select a piece of code and get insights about what it does.
+      Select a piece of code and get insights about what it does simply by pressing 
+      Alt+Shift+E or Right-click and select "Explain Selected Code" from the context menu.
     """
 }
 
